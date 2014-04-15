@@ -1,3 +1,4 @@
+import stackless
 import stacklesslib.util as sutil
 import unittest
 
@@ -160,10 +161,11 @@ class SelectTests(unittest.TestCase):
 
         def sel():
             a.append(goless.select(
-                goless.rcase(chan2),
-                goless.rcase(chan1),
+                goless.rcase(chan2, lambda x: x),
+                goless.rcase(chan1, lambda x: x),
             ))
         sutil.tasklet_new(sel)
-        self.assertEqual(a, [])  # Nothing is ready
+        self.assertEqual(a, [])
         chan1.send(5)
+        stackless.run(0)
         self.assertEqual(a, [5])

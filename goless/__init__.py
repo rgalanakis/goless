@@ -3,22 +3,28 @@ import stackless as _stackless
 from stacklesslib import wait as _swait, util as _sutil
 
 
+class _Signal(object):
+    def __init__(self):
+        self.cbs = []
+
+    def connect(self, cb):
+        self.cbs.append(cb)
+
+    def emit(self, *args, **kwargs):
+        for cb in self.cbs:
+            cb(*args, **kwargs)
+
+
 class _BaseChannel(object):
     def __init__(self):
-        self.cond_send = None
-        self.cond_recv = None
+        self.signal_send = _Signal()
+        self.signal_recv = _Signal()
 
     def send(self, value=None):
-        try:
-            pass#self.cond_send.notify()
-        except RuntimeError:
-            pass
+        self.signal_send.emit()
 
     def recv(self):
-        try:
-            pass#self.cond_recv.notify()
-        except RuntimeError:
-            pass
+        self.signal_recv.emit()
 
 
 class _SyncChannel(_BaseChannel):
@@ -120,6 +126,7 @@ class rcase(object):
     def __init__(self, chan, on_selected=None):
         self.chan = chan
         self.on_selected = on_selected
+        self.ready_signal = self.chan.signal_recv
 
     def ready(self):
         return self.chan.recv_ready()
@@ -136,6 +143,7 @@ class scase(object):
         self.chan = chan
         self.on_selected = on_selected
         self.value = value
+        self.ready_signal = self.chan.signal_send
 
     def ready(self):
         return self.chan.send_ready()
@@ -147,11 +155,25 @@ class scase(object):
 
 
 def select(*cases, **kwargs):
+    for c in cases:
+        if c.ready():
+            return c.exec_()
     default = kwargs.pop('default', None)
     if default is not None:
-        for c in cases:
-            if c.ready():
-                return c.exec_()
         return default()
+
+    syncchannel = _stackless.channel()
+
+    def handle_case(case):
+        def on_ready():
+            print 'READY'
+            syncchannel.send(case)
+        case.ready_signal.connect(on_ready)
+
     for c in cases:
-        pass
+        handle_case(c)
+
+    print 'RECVING'
+    case_to_exec = syncchannel.receive()
+    print 'RECVED'
+    return case_to_exec.exec_()

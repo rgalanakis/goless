@@ -26,9 +26,17 @@ class _BaseChannel(object):
 
     def send(self, value=None):
         self.signal_send.emit()
+        self._send(value)
+
+    def _send(self, value):
+        raise NotImplementedError()
 
     def recv(self):
         self.signal_recv.emit()
+        return self._recv()
+
+    def _recv(self):
+        raise NotImplementedError()
 
 
 class _SyncChannel(_BaseChannel):
@@ -37,12 +45,10 @@ class _SyncChannel(_BaseChannel):
         _BaseChannel.__init__(self)
         self.c = _stackless.channel()
 
-    def send(self, value=None):
-        _BaseChannel.send(self, value)
+    def _send(self, value):
         self.c.send(value)
 
-    def recv(self):
-        _BaseChannel.recv(self)
+    def _recv(self):
         return self.c.receive()
 
     def recv_ready(self):
@@ -80,8 +86,7 @@ class _BufferedChannel(_BaseChannel):
         self.waiting_senders_chan = _stackless.channel()
         self.waiting_recvers_chan = _stackless.channel()
 
-    def send(self, value=None):
-        _BaseChannel.send(self, value)
+    def _send(self, value):
         assert len(self.values_deque) <= self.maxsize
         if self.waiting_recvers_chan.balance < 0:
             assert not self.values_deque
@@ -92,8 +97,7 @@ class _BufferedChannel(_BaseChannel):
         assert len(self.values_deque) < self.maxsize
         self.values_deque.append(value)
 
-    def recv(self):
-        _BaseChannel.recv(self)
+    def _recv(self):
         if self.values_deque:
             value = self.values_deque.popleft()
         else:

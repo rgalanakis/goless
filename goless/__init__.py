@@ -1,6 +1,10 @@
 import collections as _collections
 import stackless as _stackless
-from stacklesslib import wait as _swait, util as _sutil
+
+
+def go(func):
+    """Run a function in a new tasklet, like a goroutine."""
+    _stackless.tasklet(func)()
 
 
 class _Signal(object):
@@ -118,10 +122,6 @@ def bchan(size=None):
 chan = bchan
 
 
-def go(func):
-    _stackless.tasklet(func)()
-
-
 class rcase(object):
     def __init__(self, chan, on_selected=None):
         self.chan = chan
@@ -165,15 +165,10 @@ def select(*cases, **kwargs):
     syncchannel = _stackless.channel()
 
     def handle_case(case):
-        def on_ready():
-            print 'READY'
-            syncchannel.send(case)
-        case.ready_signal.connect(on_ready)
+        case.ready_signal.connect(lambda: syncchannel.send(case))
 
     for c in cases:
         handle_case(c)
 
-    print 'RECVING'
     case_to_exec = syncchannel.receive()
-    print 'RECVED'
     return case_to_exec.exec_()

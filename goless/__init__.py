@@ -2,11 +2,12 @@ import collections as _collections
 import stackless as _stackless
 
 
-DEBUG = True
+DEBUG = False
 
 
 def debug(s, *args):
-    print s % args
+    if DEBUG:
+        print s % args
 
 
 _channel = _stackless.channel
@@ -180,27 +181,8 @@ def select(*cases, **kwargs):
         # noinspection PyCallingNonCallable
         return default()
 
-    # while True:
-    #     for c in cases:
-    #         if c.ready():
-    #             return c.exec_()
-    #     _stackless.run(0)
-
-    # def handle_case(case):
-    #     pass#case.ready_signal.connect(lambda: syncchannel.send(case))
-    #
-    # for c in cases:
-    #     handle_case(c)
-    #
-    # debug('select receiving')
-    # case_to_exec = syncchannel.receive()
-    # # try:
-    # #     case_to_exec = syncchannel.receive()
-    # # except RuntimeError:
-    # #     assert _stackless.getcurrent() is _stackless.main
-    # #     result = []
-    # #     bgtasklet = _stackless.tasklet(lambda: result.append(syncchannel.receive()))()
-    # #     while bgtasklet.alive:
-    # #         _stackless.run(0)
-    # #     case_to_exec = result[0]
-    # return case_to_exec.exec_()
+    while True:
+        for c in cases:
+            if c.ready():
+                return c.exec_()
+        _stackless.schedule()

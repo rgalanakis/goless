@@ -203,7 +203,6 @@ import time
 class Examples(unittest.TestCase):
 
     def test_select(self):
-        return
         # https://gobyexample.com/select
         c1 = goless.chan()
         c2 = goless.chan()

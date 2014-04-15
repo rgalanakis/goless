@@ -82,7 +82,7 @@ class RecvCaseTests(unittest.TestCase):
 
     def setUp(self):
         self.ch = goless.chan(self.chansize)
-        self.ca = goless.rcase(self.ch, lambda x: x * 2)
+        self.ca = goless.rcase(self.ch)
 
     def test_ready(self):
         self.assertFalse(self.ca.ready())
@@ -94,7 +94,7 @@ class RecvCaseTests(unittest.TestCase):
     def test_executes(self):
         sutil.tasklet_run(self.ch.send, 'a')
         x = self.ca.exec_()
-        self.assertEqual(x, 'aa')
+        self.assertEqual(x, 'a')
 
     def test_exec_with_no_body(self):
         sutil.tasklet_run(self.ch.send, ['a'])
@@ -111,13 +111,8 @@ class SendCaseTests(unittest.TestCase):
 
     def setUp(self):
         self.ch = goless.chan(self.chansize)
-        self.side_effect = []
         self.sendval = 1
-        self.sideffect_val = 2
-        self.ca = goless.scase(
-            self.ch,
-            self.sendval,
-            lambda: self.side_effect.append(self.sideffect_val))
+        self.ca = goless.scase(self.ch, self.sendval)
 
     def test_ready(self):
         def assert_default_readiness():
@@ -137,7 +132,6 @@ class SendCaseTests(unittest.TestCase):
         a = []
         sutil.tasklet_run(recv)
         self.ca.exec_()
-        self.assertEqual(self.side_effect, [self.sideffect_val])
         self.assertEqual(a, [self.sendval])
 
     def test_exec_no_onselected(self):
@@ -150,51 +144,47 @@ class SendCaseUnbufferedTests(SendCaseTests):
 
 
 class SelectTests(unittest.TestCase):
-
     def setUp(self):
         self.chan1 = goless.chan()
 
     def test_select_uses_default(self):
-        chan1 = goless.chan()
-        result = goless.select(
-            goless.rcase(chan1, raiseit),
-            default=lambda: 7
-        )
-        self.assertEqual(result, 7)
+        cases = [goless.rcase(self.chan1), goless.dcase()]
+        result, val = goless.select(cases)
+        self.assertIs(result, cases[1])
+        self.assertIsNone(val)
 
     def test_select_chooses_ready_selection(self):
         readychan = goless.chan(1)
         notreadychan = goless.chan(1)
         readychan.send(3)
-        result = goless.select(
-            goless.rcase(notreadychan, raiseit),
-            goless.rcase(readychan, lambda x: x * 2),
-            default=raiseit
-        )
-        self.assertEqual(result, 6)
+        cases = [goless.rcase(notreadychan), goless.rcase(readychan), goless.dcase()]
+        result, val = goless.select(cases)
+        self.assertIs(result, cases[1])
+        self.assertEqual(val, 3)
 
     def test_select_no_default_no_ready_blocks(self):
         chan1 = goless.chan()
         chan2 = goless.chan()
         a = []
+        cases = [goless.rcase(chan2), goless.rcase(chan1)]
 
         def sel():
-            a.append(goless.select(
-                goless.rcase(chan2, lambda x: x),
-                goless.rcase(chan1, lambda x: x),
-            ))
+            a.append(goless.select(cases))
         sutil.tasklet_new(sel)
         self.assertEqual(a, [])
         chan1.send(5)
         stackless.run(0)
-        self.assertEqual(a, [5])
+        self.assertEqual(len(a), 1)
+        chosen, val = a[0]
+        self.assertEqual(chosen, cases[1])
+        self.assertEqual(val, 5)
 
     def test_main_tasklet_can_select(self):
         chan1 = goless.chan(1)
-
-        goless.select(
-            goless.scase(chan1),
-        )
+        cases = [goless.scase(chan1, 3)]
+        chosen, val = goless.select(cases)
+        self.assertIs(chosen, cases[0])
+        self.assertIsNone(val)
 
 
 import time
@@ -226,9 +216,7 @@ class Examples(unittest.TestCase):
 
         for i in range(2):
             debug('loop %s', i)
-            goless.select(
-                goless.rcase(c1, callbacks.append),
-                goless.rcase(c2, callbacks.append),
-            )
+            _, val = goless.select([goless.rcase(c1), goless.rcase(c2)])
+            callbacks.append(val)
 
         self.assertEqual(callbacks, ['one', 'two'])

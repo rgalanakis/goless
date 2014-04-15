@@ -142,25 +142,20 @@ chan = bchan
 
 # noinspection PyPep8Naming,PyShadowingNames
 class rcase(object):
-    def __init__(self, chan, on_selected=None):
+    def __init__(self, chan):
         self.chan = chan
-        self.on_selected = on_selected
 
     def ready(self):
         return self.chan.recv_ready()
 
     def exec_(self):
-        val = self.chan.recv()
-        if self.on_selected:
-            return self.on_selected(val)
-        return val
+        return self.chan.recv()
 
 
 # noinspection PyPep8Naming,PyShadowingNames
 class scase(object):
-    def __init__(self, chan, value=None, on_selected=None):
+    def __init__(self, chan, value):
         self.chan = chan
-        self.on_selected = on_selected
         self.value = value
 
     def ready(self):
@@ -168,21 +163,27 @@ class scase(object):
 
     def exec_(self):
         self.chan.send(self.value)
-        if self.on_selected:
-            self.on_selected()
 
 
-def select(*cases, **kwargs):
+# noinspection PyPep8Naming
+class dcase(object):
+    def ready(self):
+        return False
+
+
+def select(cases):
+    default = None
     for c in cases:
         if c.ready():
-            return c.exec_()
-    default = kwargs.pop('default', None)
+            return c, c.exec_()
+        if isinstance(c, dcase):
+            default = c
     if default is not None:
         # noinspection PyCallingNonCallable
-        return default()
+        return default, None
 
     while True:
         for c in cases:
             if c.ready():
-                return c.exec_()
+                return c, c.exec_()
         _stackless.schedule()

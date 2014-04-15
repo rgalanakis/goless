@@ -2,44 +2,56 @@ import collections as _collections
 import stackless as _stackless
 
 
+DEBUG = True
+
+
+def debug(s, *args):
+    print s % args
+
+
+_channel = _stackless.channel
+if DEBUG:
+    class _Channel(_stackless.channel):
+        def send(self, value):
+            debug('schan sending')
+            _stackless.channel.send(self, value)
+            debug('schan sent')
+
+        def receive(self):
+            debug('schan recving')
+            got = _stackless.channel.receive(self)
+            debug('schan recved')
+            return got
+
+
 def go(func):
     """Run a function in a new tasklet, like a goroutine."""
     _stackless.tasklet(func)()
 
 
-class _Signal(object):
-    def __init__(self):
-        self.cbs = []
-
-    def connect(self, cb):
-        self.cbs.append(cb)
-
-    def emit(self, *args, **kwargs):
-        for cb in self.cbs:
-            cb(*args, **kwargs)
-
-
 class _BaseChannel(object):
-    def __init__(self):
-        self.signal_send = _Signal()
-        self.signal_recv = _Signal()
+    _nickname = None
 
     def send(self, value=None):
-        self.signal_send.emit()
+        debug('%s sending %s', self._nickname, value)
         self._send(value)
+        debug('%s sent', self._nickname)
 
     def _send(self, value):
         raise NotImplementedError()
 
     def recv(self):
-        self.signal_recv.emit()
-        return self._recv()
+        debug('%s recving', self._nickname)
+        got = self._recv()
+        debug('%s recved %s', self._nickname, got)
+        return got
 
     def _recv(self):
         raise NotImplementedError()
 
 
 class _SyncChannel(_BaseChannel):
+    _nickname = 'gosyncchan'
 
     def __init__(self):
         _BaseChannel.__init__(self)
@@ -52,10 +64,10 @@ class _SyncChannel(_BaseChannel):
         return self.c.receive()
 
     def recv_ready(self):
-        return self.c.balance < 0
+        return self.c.balance > 0
 
     def send_ready(self):
-        return self.c.balance > 0
+        return self.c.balance < 0
 
 
 class _BufferedChannel(_BaseChannel):
@@ -77,6 +89,7 @@ class _BufferedChannel(_BaseChannel):
        block until an item is recved (see #3).
        This bypasses the deque entirely because we send the value through the channel.
     """
+    _nickname = 'gobufchan'
 
     def __init__(self, size):
         assert isinstance(size, int) and size > 0
@@ -126,11 +139,11 @@ def bchan(size=None):
 chan = bchan
 
 
+# noinspection PyPep8Naming,PyShadowingNames
 class rcase(object):
     def __init__(self, chan, on_selected=None):
         self.chan = chan
         self.on_selected = on_selected
-        self.ready_signal = self.chan.signal_recv
 
     def ready(self):
         return self.chan.recv_ready()
@@ -142,12 +155,12 @@ class rcase(object):
         return val
 
 
+# noinspection PyPep8Naming,PyShadowingNames
 class scase(object):
     def __init__(self, chan, value=None, on_selected=None):
         self.chan = chan
         self.on_selected = on_selected
         self.value = value
-        self.ready_signal = self.chan.signal_send
 
     def ready(self):
         return self.chan.send_ready()
@@ -164,15 +177,30 @@ def select(*cases, **kwargs):
             return c.exec_()
     default = kwargs.pop('default', None)
     if default is not None:
+        # noinspection PyCallingNonCallable
         return default()
 
-    syncchannel = _stackless.channel()
+    # while True:
+    #     for c in cases:
+    #         if c.ready():
+    #             return c.exec_()
+    #     _stackless.run(0)
 
-    def handle_case(case):
-        case.ready_signal.connect(lambda: syncchannel.send(case))
-
-    for c in cases:
-        handle_case(c)
-
-    case_to_exec = syncchannel.receive()
-    return case_to_exec.exec_()
+    # def handle_case(case):
+    #     pass#case.ready_signal.connect(lambda: syncchannel.send(case))
+    #
+    # for c in cases:
+    #     handle_case(c)
+    #
+    # debug('select receiving')
+    # case_to_exec = syncchannel.receive()
+    # # try:
+    # #     case_to_exec = syncchannel.receive()
+    # # except RuntimeError:
+    # #     assert _stackless.getcurrent() is _stackless.main
+    # #     result = []
+    # #     bgtasklet = _stackless.tasklet(lambda: result.append(syncchannel.receive()))()
+    # #     while bgtasklet.alive:
+    # #         _stackless.run(0)
+    # #     case_to_exec = result[0]
+    # return case_to_exec.exec_()

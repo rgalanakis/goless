@@ -3,6 +3,7 @@ import stacklesslib.util as sutil
 import unittest
 
 import goless
+from goless import debug
 
 
 def raiseit(*args, **kwargs):
@@ -47,6 +48,7 @@ class ChanTests(unittest.TestCase):
     def test_buffered_chan_will_block_at_max_size(self):
         chan = goless.chan(2)
         markers = []
+
         def sendall():
             markers.append(chan.send(4))
             markers.append(chan.send(3))
@@ -63,6 +65,7 @@ class ChanTests(unittest.TestCase):
     def test_buffered_chan_will_block_on_recv_with_no_items(self):
         chan = goless.chan(1)
         markers = []
+
         def recvall():
             markers.append(chan.recv())
             markers.append(chan.recv())
@@ -75,31 +78,39 @@ class ChanTests(unittest.TestCase):
 
 
 class RecvCaseTests(unittest.TestCase):
+    chansize = 1
+
     def setUp(self):
-        self.ch = goless.chan(1)
+        self.ch = goless.chan(self.chansize)
         self.ca = goless.rcase(self.ch, lambda x: x * 2)
 
     def test_ready(self):
         self.assertFalse(self.ca.ready())
-        self.ch.send(1)
+        sutil.tasklet_run(self.ch.send, [1])
         self.assertTrue(self.ca.ready())
-        self.ch.recv()
+        sutil.tasklet_run(self.ch.recv)
         self.assertFalse(self.ca.ready())
 
     def test_executes(self):
-        self.ch.send('a')
+        sutil.tasklet_run(self.ch.send, 'a')
         x = self.ca.exec_()
         self.assertEqual(x, 'aa')
 
     def test_exec_with_no_body(self):
-        self.ch.send('a')
+        sutil.tasklet_run(self.ch.send, ['a'])
         ca = goless.rcase(self.ch)
         self.assertEqual(ca.exec_(), 'a')
 
 
+class RecvCaseUnbufferedTests(RecvCaseTests):
+    chansize = 0
+
+
 class SendCaseTests(unittest.TestCase):
+    chansize = 1
+
     def setUp(self):
-        self.ch = goless.chan(1)
+        self.ch = goless.chan(self.chansize)
         self.side_effect = []
         self.sendval = 1
         self.sideffect_val = 2
@@ -109,11 +120,14 @@ class SendCaseTests(unittest.TestCase):
             lambda: self.side_effect.append(self.sideffect_val))
 
     def test_ready(self):
-        self.assertTrue(self.ca.ready())
-        self.ch.send(None)
+        def assert_default_readiness():
+            self.assertEquals(self.ca.ready(), self.chansize > 0)
+
+        assert_default_readiness()
+        sutil.tasklet_run(self.ch.send)
         self.assertFalse(self.ca.ready())
         sutil.tasklet_run(self.ch.recv)
-        self.assertTrue(self.ca.ready())
+        assert_default_readiness()
         sutil.tasklet_run(self.ch.send)
         self.assertFalse(self.ca.ready())
 
@@ -127,7 +141,12 @@ class SendCaseTests(unittest.TestCase):
         self.assertEqual(a, [self.sendval])
 
     def test_exec_no_onselected(self):
+        sutil.tasklet_run(self.ch.recv)
         self.ca.exec_()
+
+
+class SendCaseUnbufferedTests(SendCaseTests):
+    chansize = 0
 
 
 class SelectTests(unittest.TestCase):
@@ -155,8 +174,8 @@ class SelectTests(unittest.TestCase):
         self.assertEqual(result, 6)
 
     def test_select_no_default_no_ready_blocks(self):
-        chan1 = goless.chan(1)
-        chan2 = goless.chan(1)
+        chan1 = goless.chan()
+        chan2 = goless.chan()
         a = []
 
         def sel():
@@ -169,3 +188,48 @@ class SelectTests(unittest.TestCase):
         chan1.send(5)
         stackless.run(0)
         self.assertEqual(a, [5])
+
+    def test_main_tasklet_can_select(self):
+        chan1 = goless.chan(1)
+
+        goless.select(
+            goless.scase(chan1),
+        )
+
+
+import time
+
+
+class Examples(unittest.TestCase):
+
+    def test_select(self):
+        return
+        # https://gobyexample.com/select
+        c1 = goless.chan()
+        c2 = goless.chan()
+
+        def func1():
+            time.sleep(.1)
+            debug('sending1')
+            c1.send('one')
+            debug('sent1')
+        goless.go(func1)
+
+        def func2():
+            time.sleep(.2)
+            debug('sending2')
+            c2.send('two')
+            debug('sent2')
+        goless.go(func2)
+
+        # We don't print since we run this as a test.
+        callbacks = []
+
+        for i in range(2):
+            debug('loop %s', i)
+            goless.select(
+                goless.rcase(c1, callbacks.append),
+                goless.rcase(c2, callbacks.append),
+            )
+
+        self.assertEqual(callbacks, ['one', 'two'])

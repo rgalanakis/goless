@@ -121,7 +121,7 @@ class rcase(object):
         self.chan = chan
         self.on_selected = on_selected
 
-    def fulfilled(self):
+    def ready(self):
         return self.chan.recv_ready()
 
     def exec_(self):
@@ -137,7 +137,7 @@ class scase(object):
         self.on_selected = on_selected
         self.value = value
 
-    def fulfilled(self):
+    def ready(self):
         return self.chan.send_ready()
 
     def exec_(self):
@@ -150,7 +150,7 @@ def select(*cases, **kwargs):
     default = kwargs.pop('default', None)
     if default is not None:
         for c in cases:
-            if c.fulfilled():
+            if c.ready():
                 return c.exec_()
         return default()
     for c in cases:

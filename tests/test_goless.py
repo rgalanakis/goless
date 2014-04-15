@@ -79,11 +79,11 @@ class RecvCaseTests(unittest.TestCase):
         self.ca = goless.rcase(self.ch, lambda x: x * 2)
 
     def test_ready(self):
-        self.assertFalse(self.ca.fulfilled())
+        self.assertFalse(self.ca.ready())
         self.ch.send(1)
-        self.assertTrue(self.ca.fulfilled())
+        self.assertTrue(self.ca.ready())
         self.ch.recv()
-        self.assertFalse(self.ca.fulfilled())
+        self.assertFalse(self.ca.ready())
 
     def test_executes(self):
         self.ch.send('a')
@@ -108,13 +108,13 @@ class SendCaseTests(unittest.TestCase):
             lambda: self.side_effect.append(self.sideffect_val))
 
     def test_ready(self):
-        self.assertTrue(self.ca.fulfilled())
+        self.assertTrue(self.ca.ready())
         self.ch.send(None)
-        self.assertFalse(self.ca.fulfilled())
+        self.assertFalse(self.ca.ready())
         sutil.tasklet_run(self.ch.recv)
-        self.assertTrue(self.ca.fulfilled())
+        self.assertTrue(self.ca.ready())
         sutil.tasklet_run(self.ch.send)
-        self.assertFalse(self.ca.fulfilled())
+        self.assertFalse(self.ca.ready())
 
     def test_executes(self):
         def recv():

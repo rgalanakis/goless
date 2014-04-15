@@ -1,8 +1,8 @@
 import stackless
-import stacklesslib.util as sutil
 import unittest
 
 import goless
+from . import run_tasklet, start_tasklet
 
 
 class RecvCaseTests(unittest.TestCase):
@@ -14,18 +14,18 @@ class RecvCaseTests(unittest.TestCase):
 
     def test_ready(self):
         self.assertFalse(self.ca.ready())
-        sutil.tasklet_run(self.ch.send, [1])
+        run_tasklet(self.ch.send, 1)
         self.assertTrue(self.ca.ready())
-        sutil.tasklet_run(self.ch.recv)
+        run_tasklet(self.ch.recv)
         self.assertFalse(self.ca.ready())
 
     def test_executes(self):
-        sutil.tasklet_run(self.ch.send, 'a')
+        run_tasklet(self.ch.send, 'a')
         x = self.ca.exec_()
         self.assertEqual(x, 'a')
 
     def test_exec_with_no_body(self):
-        sutil.tasklet_run(self.ch.send, ['a'])
+        run_tasklet(self.ch.send, 'a')
         ca = goless.rcase(self.ch)
         self.assertEqual(ca.exec_(), 'a')
 
@@ -47,23 +47,23 @@ class SendCaseTests(unittest.TestCase):
             self.assertEquals(self.ca.ready(), self.chansize > 0)
 
         assert_default_readiness()
-        sutil.tasklet_run(self.ch.send)
+        run_tasklet(self.ch.send)
         self.assertFalse(self.ca.ready())
-        sutil.tasklet_run(self.ch.recv)
+        run_tasklet(self.ch.recv)
         assert_default_readiness()
-        sutil.tasklet_run(self.ch.send)
+        run_tasklet(self.ch.send)
         self.assertFalse(self.ca.ready())
 
     def test_executes(self):
         def recv():
             a.append(self.ch.recv())
         a = []
-        sutil.tasklet_run(recv)
+        run_tasklet(recv)
         self.ca.exec_()
         self.assertEqual(a, [self.sendval])
 
     def test_exec_no_onselected(self):
-        sutil.tasklet_run(self.ch.recv)
+        run_tasklet(self.ch.recv)
         self.ca.exec_()
 
 
@@ -98,7 +98,7 @@ class SelectTests(unittest.TestCase):
 
         def sel():
             a.append(goless.select(cases))
-        sutil.tasklet_new(sel)
+        start_tasklet(sel)
         self.assertEqual(a, [])
         chan1.send(5)
         stackless.run(0)

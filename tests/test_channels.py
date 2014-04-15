@@ -1,7 +1,7 @@
-import stacklesslib.util as sutil
 import unittest
 
 import goless
+from . import run_tasklet
 
 
 class ChanTests(unittest.TestCase):
@@ -48,7 +48,7 @@ class ChanTests(unittest.TestCase):
             markers.append(chan.send(3))
             markers.append(chan.send(2))
             markers.append(chan.send(1))
-        sutil.tasklet_run(sendall)
+        run_tasklet(sendall)
         self.assertEqual(len(markers), 2)
         got = [chan.recv(), chan.recv()]
         self.assertEqual(len(markers), 4)
@@ -63,7 +63,7 @@ class ChanTests(unittest.TestCase):
         def recvall():
             markers.append(chan.recv())
             markers.append(chan.recv())
-        sutil.tasklet_run(recvall)
+        run_tasklet(recvall)
         self.assertEqual(markers, [])
         chan.send(1)
         self.assertEqual(markers, [1])

@@ -1,17 +1,38 @@
-import collections
-import stackless
-import stacklesslib.util as sutil
+import collections as _collections
+import stackless as _stackless
+from stacklesslib import wait as _swait, util as _sutil
 
 
-class _SyncChannel(object):
-
+class _BaseChannel(object):
     def __init__(self):
-        self.c = stackless.channel()
+        self.cond_send = None
+        self.cond_recv = None
 
     def send(self, value=None):
+        try:
+            pass#self.cond_send.notify()
+        except RuntimeError:
+            pass
+
+    def recv(self):
+        try:
+            pass#self.cond_recv.notify()
+        except RuntimeError:
+            pass
+
+
+class _SyncChannel(_BaseChannel):
+
+    def __init__(self):
+        _BaseChannel.__init__(self)
+        self.c = _stackless.channel()
+
+    def send(self, value=None):
+        _BaseChannel.send(self, value)
         self.c.send(value)
 
     def recv(self):
+        _BaseChannel.recv(self)
         return self.c.receive()
 
     def recv_ready(self):
@@ -21,7 +42,7 @@ class _SyncChannel(object):
         return self.c.balance > 0
 
 
-class _BufferedChannel(object):
+class _BufferedChannel(_BaseChannel):
     """
     BufferedChannel has several situations it must handle:
 
@@ -43,12 +64,14 @@ class _BufferedChannel(object):
 
     def __init__(self, size):
         assert isinstance(size, int) and size > 0
+        _BaseChannel.__init__(self)
         self.maxsize = size
-        self.values_deque = collections.deque()
-        self.waiting_senders_chan = stackless.channel()
-        self.waiting_recvers_chan = stackless.channel()
+        self.values_deque = _collections.deque()
+        self.waiting_senders_chan = _stackless.channel()
+        self.waiting_recvers_chan = _stackless.channel()
 
     def send(self, value=None):
+        _BaseChannel.send(self, value)
         assert len(self.values_deque) <= self.maxsize
         if self.waiting_recvers_chan.balance < 0:
             assert not self.values_deque
@@ -60,6 +83,7 @@ class _BufferedChannel(object):
         self.values_deque.append(value)
 
     def recv(self):
+        _BaseChannel.recv(self)
         if self.values_deque:
             value = self.values_deque.popleft()
         else:
@@ -89,7 +113,7 @@ chan = bchan
 
 
 def go(func):
-    stackless.tasklet(func)()
+    _stackless.tasklet(func)()
 
 
 class rcase(object):
@@ -124,18 +148,10 @@ class scase(object):
 
 def select(*cases, **kwargs):
     default = kwargs.pop('default', None)
-    while True:
-        got = _poll(cases)
-        if got is not _NOMATCH:
-            return got
-        if default is not None:
-            return default()
-
-_NOMATCH = object()
-
-
-def _poll(cases):
+    if default is not None:
+        for c in cases:
+            if c.fulfilled():
+                return c.exec_()
+        return default()
     for c in cases:
-        if c.fulfilled():
-            return c.exec_()
-    return _NOMATCH
+        pass

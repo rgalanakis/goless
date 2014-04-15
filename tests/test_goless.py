@@ -3,7 +3,7 @@ import stacklesslib.util as sutil
 import unittest
 
 import goless
-from goless import debug
+from goless.debug import debug
 
 
 def raiseit(*args, **kwargs):

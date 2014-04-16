@@ -78,6 +78,10 @@ class _BaseChannel(object):
 
 
 class _SyncChannel(_BaseChannel):
+    """Channel that behaves synchronously.
+    A recv blocks until a sender is available,
+    and a sender blocks until a recver is available.
+    """
     _nickname = 'gosyncchan'
 
     def __init__(self):
@@ -97,24 +101,45 @@ class _SyncChannel(_BaseChannel):
         return self.c.balance < 0
 
 
+class _AsyncChannel(_BaseChannel):
+    """
+    A channel where send never blocks,
+    and recv blocks if there are no items in the buffer.
+    """
+    _nickname = 'goasyncchan'
+
+    def __init__(self):
+        _BaseChannel.__init__(self)
+        self.c = schannel()
+        self.q = _collections.deque()
+
+    def _send(self, value):
+        self.q.append(value)
+
+    def _recv(self):
+        if not self.q:
+            return self.c.receive()
+        return self.q.popleft()
+
+
 class _BufferedChannel(_BaseChannel):
     """
     BufferedChannel has several situations it must handle:
 
-    1. When sending, if there is room in the deque, just append the value and return.
-    2. When sending, if the deque is full, block until told there is room in the queue
+    1. When sending, if there is room in the buffer, just append the value and return.
+    2. When sending, if the buffer is full, block until told there is room in the buffer
        and then append the value.
        The recv method will signal the sender when there is room (see #4).
     3. When sending, if there are recvers waiting (see #6),
        send the value directly to the first waiting recver.
-       Bypass the deque entirely. The deque should always be empty in this case.
-    4. Whenever recving, if there are senders waiting for room in the queue (see #2),
+       Bypass the bugger entirely. The buffer should always be empty in this case.
+    4. Whenever recving, if there are senders waiting for room in the buffer (see #2),
        signal the first one after popping a value.
-    5. When recving, if there is an item in the deque, pop it off,
+    5. When recving, if there is an item in the buffer, pop it off,
        execute step #4, and return the popped value.
-    6. When recving, if there is no item in the queue,
+    6. When recving, if there is no item in the buffer,
        block until an item is recved (see #3).
-       This bypasses the deque entirely because we send the value through the channel.
+       This bypasses the buffer entirely because we send the value through the channel.
     """
     _nickname = 'gobufchan'
 
@@ -165,8 +190,10 @@ def bchan(size=None):
 
     :rtype: _BaseChannel
     """
-    if not size:
+    if size in (None, 0):
         return _SyncChannel()
+    if size < 0:
+        return _AsyncChannel()
     return _BufferedChannel(size)
 
 chan = bchan

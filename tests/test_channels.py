@@ -19,6 +19,17 @@ class ChanTests(unittest.TestCase):
         results = [chan.recv(), chan.recv()]
         self.assertEqual(results, [1, 2])
 
+    def test_infinitely_buffered_chan(self):
+        # Obviously we cannot test an infinite buffer,
+        # but we can just test a huge one's behavior.
+        chan = goless.chan(-1)
+        million = 1000000
+        for _ in xrange(million):
+            chan.send()
+        chan.close()
+        for _ in chan:
+            pass
+
     def test_buffered_chan_will_buffer(self):
         resultschan = goless.chan(5)
         endchan = goless.chan()

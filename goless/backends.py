@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 
 class Backend(object):
     def start(self, func, *args, **kwargs):
@@ -53,4 +54,40 @@ def _make_stackless():
     return StacklessBackend()
 
 
+def _make_gevent():
+    import gevent
+    import gevent.queue
+
+    class Channel(gevent.queue.Channel):
+        def send(self, value):
+            self.put(value)
+
+        def receive(self):
+            return self.get()
+
+    class GeventBackend(Backend):
+        def start(self, func, *args, **kwargs):
+            greenlet = gevent.spawn(func, *args, **kwargs)
+            return greenlet
+
+        def run(self, func, *args, **kwargs):
+            greenlet = gevent.spawn(func, *args, **kwargs)
+            gevent.sleep()
+            return greenlet
+
+        def channel(self):
+            return Channel()
+
+        def yield_(self):
+            gevent.sleep()
+
+        def resume(self, tasklet):
+            gevent.sleep()
+
+        def propogate_exc(self, errtype, *args):
+            raise errtype
+
+    return GeventBackend()
+
 current = _make_stackless()
+#current = _make_gevent()

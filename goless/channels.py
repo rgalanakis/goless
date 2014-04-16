@@ -1,22 +1,7 @@
 import collections as _collections
 import stackless as _stackless
 
-from .debug import DEBUG, debug
-
-schannel = _stackless.channel
-if DEBUG:
-    # noinspection PyPep8Naming
-    class schannel(_stackless.channel):
-        def send(self, value):
-            debug('schan sending')
-            _stackless.channel.send(self, value)
-            debug('schan sent')
-
-        def receive(self):
-            debug('schan recving')
-            got = _stackless.channel.receive(self)
-            debug('schan recved')
-            return got
+from .debug import debug
 
 
 class ChannelClosed(Exception):
@@ -31,7 +16,6 @@ class BaseChannel(object):
         self._closed = False
 
     def send(self, value=None):
-        debug('%s sending %s', self._nickname, value)
         if self._closed:
             debug('send failed, %s is closed!', self._nickname)
             raise ChannelClosed()
@@ -86,7 +70,7 @@ class SyncChannel(BaseChannel):
 
     def __init__(self):
         BaseChannel.__init__(self)
-        self.c = schannel()
+        self.c = _stackless.channel()
 
     def _send(self, value):
         self.c.send(value)
@@ -110,7 +94,7 @@ class AsyncChannel(BaseChannel):
 
     def __init__(self):
         BaseChannel.__init__(self)
-        self.c = schannel()
+        self.c = _stackless.channel()
         self.q = _collections.deque()
 
     def _send(self, value):
@@ -154,8 +138,8 @@ class BufferedChannel(BaseChannel):
         BaseChannel.__init__(self)
         self.maxsize = size
         self.values_deque = _collections.deque()
-        self.waiting_senders_chan = schannel()
-        self.waiting_recvers_chan = schannel()
+        self.waiting_senders_chan = _stackless.channel()
+        self.waiting_recvers_chan = _stackless.channel()
 
     def _send(self, value):
         assert len(self.values_deque) <= self.maxsize

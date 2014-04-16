@@ -34,6 +34,7 @@ Contents:
 - :ref:`a-select`
 - :ref:`a-exceptions`
 - :ref:`a-examples`
+- :ref:`a-backends`
 - :ref:`a-references`
 - :ref:`a-contrib`
 
@@ -97,6 +98,20 @@ Examples
 There are many examples from http://gobyexample.com implemented
 via ``goless``. See the ``tests/test_examples.py`` file.
 More idiomatic examples are encouraged.
+
+Backends
+========
+
+There are two backends for concurrently available in
+:mod:`goless.backends`.
+These backends should only be used by `goless`,
+and not by any client code.
+You can choose between backends by setting the environment variable
+``GOLESS_BACKEND`` to ``"gevent"`` or ``"stackless"``.
+Otherwise, an appropriate backend will be chosen,
+preferring ``stackless`` first.
+If neither ``gevent`` or ``stackless`` are available,
+a ``RuntimeError`` is raised on ``goless`` import.
 
 .. _a-references:
 

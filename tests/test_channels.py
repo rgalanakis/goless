@@ -23,8 +23,7 @@ class ChanTests(unittest.TestCase):
         # Obviously we cannot test an infinite buffer,
         # but we can just test a huge one's behavior.
         chan = goless.chan(-1)
-        million = 1000000
-        for _ in xrange(million):
+        for _ in xrange(10000):
             chan.send()
         chan.close()
         for _ in chan:

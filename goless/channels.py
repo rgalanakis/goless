@@ -121,6 +121,12 @@ class _AsyncChannel(_BaseChannel):
             return self.c.receive()
         return self.q.popleft()
 
+    def send_ready(self):
+        return True
+
+    def recv_ready(self):
+        return bool(self.q)
+
 
 class _BufferedChannel(_BaseChannel):
     """

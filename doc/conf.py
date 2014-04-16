@@ -18,7 +18,15 @@ import os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
+
+# Add goless to the path.
+sys.path.append(os.path.abspath('..'))
+
+# We may not have stackless or gevent available,
+# so just mock them out- we don't need them for autodoec.
+import imp
+for name in 'stackless', 'gevent':
+    sys.modules[name] = imp.new_module(name)
 
 # -- General configuration ------------------------------------------------
 

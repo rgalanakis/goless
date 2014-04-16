@@ -21,8 +21,10 @@ version = '.'.join([str(v) for v in version_info])
 
 
 def on_panic(etype, value, tb):
-    """Called when there is an unhandled error in a goroutine.
-    Logs and exits the process."""
+    """
+    Called when there is an unhandled error in a goroutine.
+    By default, logs and exits the process.
+    """
     logging.critical(traceback.format_exception(etype, value, tb))
     _stackless.getmain().throw(SystemExit, 1)
 

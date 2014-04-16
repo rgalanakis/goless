@@ -2,7 +2,7 @@ import unittest
 
 import goless
 import goless.channels as gochans
-from . import run_tasklet
+from goless.backends import stackless_backend as be
 
 
 class ChanTests(unittest.TestCase):
@@ -25,16 +25,16 @@ class ChanTestMixin(object):
     def test_recv_on_closed_chan_raises_after_chan_empties(self):
         chan = self.makechan()
 
-        run_tasklet(chan.send, 'hi')
+        be.run(chan.send, 'hi')
         self.assertEqual(chan.recv(), 'hi')
         chan.close()
         self.assertRaises(gochans.ChannelClosed, chan.recv)
 
     def test_range_with_closed_channel(self):
         chan = self.makechan()
-        run_tasklet(chan.send, 1)
-        run_tasklet(chan.send, 2)
-        run_tasklet(chan.close)
+        be.run(chan.send, 1)
+        be.run(chan.send, 2)
+        be.run(chan.close)
         items = [o for o in chan]
         self.assertEqual(items, [1, 2])
 
@@ -114,10 +114,10 @@ class BufferedChannelTests(unittest.TestCase, ChanTestMixin):
             markers.append(chan.send(3))
             markers.append(chan.send(2))
             markers.append(chan.send(1))
-        send_tasklet = run_tasklet(sendall)
+        sender = be.run(sendall)
         self.assertEqual(len(markers), 2)
         got = [chan.recv(), chan.recv()]
-        send_tasklet.run()
+        be.resume(sender)
         self.assertEqual(len(markers), 4)
         self.assertEqual(got, [4, 3])
         got.extend([chan.recv(), chan.recv()])
@@ -130,7 +130,7 @@ class BufferedChannelTests(unittest.TestCase, ChanTestMixin):
         def recvall():
             markers.append(chan.recv())
             markers.append(chan.recv())
-        run_tasklet(recvall)
+        be.run(recvall)
         self.assertEqual(markers, [])
         chan.send(1)
         self.assertEqual(markers, [1])

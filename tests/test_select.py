@@ -2,7 +2,7 @@ import stackless
 import unittest
 
 import goless
-from . import run_tasklet, start_tasklet
+from goless.backends import stackless_backend as be
 
 
 class RecvCaseTests(unittest.TestCase):
@@ -14,18 +14,18 @@ class RecvCaseTests(unittest.TestCase):
 
     def test_ready(self):
         self.assertFalse(self.ca.ready())
-        run_tasklet(self.ch.send, 1)
+        be.run(self.ch.send, 1)
         self.assertTrue(self.ca.ready())
-        run_tasklet(self.ch.recv)
+        be.run(self.ch.recv)
         self.assertFalse(self.ca.ready())
 
     def test_executes(self):
-        run_tasklet(self.ch.send, 'a')
+        be.run(self.ch.send, 'a')
         x = self.ca.exec_()
         self.assertEqual(x, 'a')
 
     def test_exec_with_no_body(self):
-        run_tasklet(self.ch.send, 'a')
+        be.run(self.ch.send, 'a')
         ca = goless.rcase(self.ch)
         self.assertEqual(ca.exec_(), 'a')
 
@@ -47,23 +47,23 @@ class SendCaseTests(unittest.TestCase):
             self.assertEquals(self.ca.ready(), self.chansize > 0)
 
         assert_default_readiness()
-        run_tasklet(self.ch.send)
+        be.run(self.ch.send)
         self.assertFalse(self.ca.ready())
-        run_tasklet(self.ch.recv)
+        be.run(self.ch.recv)
         assert_default_readiness()
-        run_tasklet(self.ch.send)
+        be.run(self.ch.send)
         self.assertFalse(self.ca.ready())
 
     def test_executes(self):
         def recv():
             a.append(self.ch.recv())
         a = []
-        run_tasklet(recv)
+        be.run(recv)
         self.ca.exec_()
         self.assertEqual(a, [self.sendval])
 
     def test_exec_no_onselected(self):
-        run_tasklet(self.ch.recv)
+        be.run(self.ch.recv)
         self.ca.exec_()
 
 
@@ -98,7 +98,7 @@ class SelectTests(unittest.TestCase):
 
         def sel():
             a.append(goless.select(cases))
-        start_tasklet(sel)
+        be.run(sel)
         self.assertEqual(a, [])
         chan1.send(5)
         stackless.schedule()

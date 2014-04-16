@@ -1,6 +1,21 @@
 goless: Go-style Python
 =======================
 
+- :ref:`a-intro`
+- :ref:`a-goroutines`
+- :ref:`a-channels`
+- :ref:`a-select`
+- :ref:`a-exceptions`
+- :ref:`a-examples`
+- :ref:`a-backends`
+- :ref:`a-references`
+- :ref:`a-contrib`
+
+.. _a-intro:
+
+Intro
+=====
+
 The **goless** library provides **Go** programming language
 semantics built on top of **Stackless Python** or **gevent**.
 
@@ -26,16 +41,6 @@ can be roughly implemented as follows::
 
 It is surely a testament to Go's style that it isn't much less Python code than Go code,
 but I quite like this. Don't you?
-
-Contents:
-
-- :ref:`a-goroutines`
-- :ref:`a-channels`
-- :ref:`a-select`
-- :ref:`a-exceptions`
-- :ref:`a-examples`
-- :ref:`a-references`
-- :ref:`a-contrib`
 
 .. _a-goroutines:
 
@@ -98,6 +103,22 @@ There are many examples from http://gobyexample.com implemented
 via ``goless``. See the ``tests/test_examples.py`` file.
 More idiomatic examples are encouraged.
 
+.. _a-backends:
+
+Backends
+========
+
+There are two backends for concurrently available in
+:mod:`goless.backends`.
+These backends should only be used by `goless`,
+and not by any client code.
+You can choose between backends by setting the environment variable
+``GOLESS_BACKEND`` to ``"gevent"`` or ``"stackless"``.
+Otherwise, an appropriate backend will be chosen,
+preferring ``stackless`` first.
+If neither ``gevent`` or ``stackless`` are available,
+a ``RuntimeError`` is raised on ``goless`` import.
+
 .. _a-references:
 
 References
@@ -119,15 +140,19 @@ Contributing
 I am definitely not a Go expert,
 so improvements to make things more idiomatic are very welcome.
 
-``goless`` is maintained primarily by Rob Galanakis (<rob.galanakis@gmail.com>),
-and was created during the PyCon 2014 sprints.
+``goless`` was created by a number of people  at the PyCon 2014 sprints.
 Even a small library like ``goless`` is the product of lots of collaboration.
 
+Maintainers:
+
+- Rob Galanakis <rob.galanakis@gmail.com>
 - Simon König <simjoko@gmail.com>
 - Carlos Knippschild <carlos.chuim@gmail.com>
+
+Special thanks:
+
 - Kristján Valur Jónsson <sweskman@gmail.com>
 - Andrew Francis <af.stackless@gmail.com>
-
 
 Indices and tables
 ==================

@@ -19,11 +19,22 @@ if DEBUG:
             return got
 
 
+class ChannelClosed(Exception):
+    """Exception raised when send is called on a closed channel,
+    or recv is called on a closed channel with an empty buffer."""
+
+
 class _BaseChannel(object):
     _nickname = None
 
+    def __init__(self):
+        self._closed = False
+
     def send(self, value=None):
         debug('%s sending %s', self._nickname, value)
+        if self._closed:
+            debug('send failed, %s is closed!', self._nickname)
+            raise ChannelClosed()
         self._send(value)
         debug('%s sent', self._nickname)
 
@@ -32,6 +43,9 @@ class _BaseChannel(object):
 
     def recv(self):
         debug('%s recving', self._nickname)
+        if self._closed and not self.recv_ready():
+            debug('recv failed, %s is closed and empty.', self._nickname)
+            raise ChannelClosed()
         got = self._recv()
         debug('%s recved %s', self._nickname, got)
         return got
@@ -47,6 +61,11 @@ class _BaseChannel(object):
     def send_ready(self):
         """Return True if a receiver is waiting,
         or the buffer has room."""
+
+    def close(self):
+        """Closes the channel, not allowing further communication.
+        See documentation for details about closed channel behavior."""
+        self._closed = True
 
 
 class _SyncChannel(_BaseChannel):

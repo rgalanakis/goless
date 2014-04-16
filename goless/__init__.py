@@ -9,7 +9,7 @@ wasn't very effective).
 import stackless as _stackless
 
 
-from .channels import chan
+from .channels import chan, ChannelClosed
 from .select import dcase, rcase, scase, select
 
 

@@ -69,3 +69,16 @@ class ChanTests(unittest.TestCase):
         self.assertEqual(markers, [1])
         chan.send(2)
         self.assertEqual(markers, [1, 2])
+
+    def test_send_on_closed_chan_will_raise(self):
+        chan = goless.chan(1)
+        chan.send()
+        chan.close()
+        self.assertRaises(goless.ChannelClosed, chan.send)
+
+    def test_recv_on_closed_chan_raises_after_chan_empties(self):
+        chan = goless.chan(1)
+        chan.send('hi')
+        chan.close()
+        self.assertEqual(chan.recv(), 'hi')
+        self.assertRaises(goless.ChannelClosed, chan.recv)

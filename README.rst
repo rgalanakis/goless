@@ -36,7 +36,7 @@ Credits
 and was created during the PyCon 2014 sprints.
 Even a small library like ``goless`` is the product of lots of collaboration.
 
-- Simon König
+- Simon König <simjoko@gmail.com>
 - Carlos Knippschild <carlos.chuim@gmail.com>
 - Kristján Valur Jónsson <sweskman@gmail.com>
 - Andrew Francis <af.stackless@gmail.com>

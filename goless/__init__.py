@@ -14,7 +14,7 @@ from .select import dcase, rcase, scase, select
 
 
 version_info = 0, 0, 1
-version = '.'.join(version_info)
+version = '.'.join([str(v) for v in version_info])
 
 
 def go(func):

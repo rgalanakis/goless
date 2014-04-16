@@ -1,4 +1,3 @@
-import stackless
 import unittest
 
 import goless
@@ -101,7 +100,7 @@ class SelectTests(unittest.TestCase):
         be.run(sel)
         self.assertEqual(a, [])
         chan1.send(5)
-        stackless.schedule()
+        be.yield_()
         self.assertEqual(len(a), 1)
         chosen, val = a[0]
         self.assertEqual(chosen, cases[1])

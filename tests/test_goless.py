@@ -1,7 +1,7 @@
-import stackless
 import unittest
 
 import goless
+from goless.backends import stackless_backend as be
 
 
 class GoTests(unittest.TestCase):
@@ -9,7 +9,7 @@ class GoTests(unittest.TestCase):
     def setUp(self):
         # Make sure unhandled exceptions are observed in the context
         # of a single test.
-        stackless.schedule()
+        be.yield_()
 
         oldpanic = goless.on_panic
         self.panic_calls = []
@@ -19,17 +19,17 @@ class GoTests(unittest.TestCase):
             goless.on_panic = oldpanic
         self.addCleanup(restore_panic)
 
-        self.addCleanup(stackless.schedule)
+        self.addCleanup(be.yield_)
 
     def test_starts_stuff(self):
         items = []
         goless.go(lambda: items.append(1))
-        stackless.schedule()
+        be.yield_()
         self.assertEqual(items, [1])
 
     def test_exc(self):
         def raiseit():
             raise RuntimeError('ha!')
         goless.go(raiseit)
-        stackless.schedule()
+        be.yield_()
         self.assertEqual(len(self.panic_calls), 1)

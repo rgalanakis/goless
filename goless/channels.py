@@ -24,7 +24,7 @@ class ChannelClosed(Exception):
     or recv is called on a closed channel with an empty buffer."""
 
 
-class _BaseChannel(object):
+class BaseChannel(object):
     _nickname = None
 
     def __init__(self):
@@ -77,7 +77,7 @@ class _BaseChannel(object):
             raise StopIteration
 
 
-class _SyncChannel(_BaseChannel):
+class SyncChannel(BaseChannel):
     """Channel that behaves synchronously.
     A recv blocks until a sender is available,
     and a sender blocks until a recver is available.
@@ -85,7 +85,7 @@ class _SyncChannel(_BaseChannel):
     _nickname = 'gosyncchan'
 
     def __init__(self):
-        _BaseChannel.__init__(self)
+        BaseChannel.__init__(self)
         self.c = schannel()
 
     def _send(self, value):
@@ -101,7 +101,7 @@ class _SyncChannel(_BaseChannel):
         return self.c.balance < 0
 
 
-class _AsyncChannel(_BaseChannel):
+class AsyncChannel(BaseChannel):
     """
     A channel where send never blocks,
     and recv blocks if there are no items in the buffer.
@@ -109,7 +109,7 @@ class _AsyncChannel(_BaseChannel):
     _nickname = 'goasyncchan'
 
     def __init__(self):
-        _BaseChannel.__init__(self)
+        BaseChannel.__init__(self)
         self.c = schannel()
         self.q = _collections.deque()
 
@@ -128,7 +128,7 @@ class _AsyncChannel(_BaseChannel):
         return bool(self.q)
 
 
-class _BufferedChannel(_BaseChannel):
+class BufferedChannel(BaseChannel):
     """
     BufferedChannel has several situations it must handle:
 
@@ -151,7 +151,7 @@ class _BufferedChannel(_BaseChannel):
 
     def __init__(self, size):
         assert isinstance(size, int) and size > 0
-        _BaseChannel.__init__(self)
+        BaseChannel.__init__(self)
         self.maxsize = size
         self.values_deque = _collections.deque()
         self.waiting_senders_chan = schannel()
@@ -194,12 +194,12 @@ def bchan(size=None):
     Once the buffer is filled, ``send`` will block.
     When the buffer is empty, ``recv`` will block.
 
-    :rtype: _BaseChannel
+    :rtype: BaseChannel
     """
     if size in (None, 0):
-        return _SyncChannel()
+        return SyncChannel()
     if size < 0:
-        return _AsyncChannel()
-    return _BufferedChannel(size)
+        return AsyncChannel()
+    return BufferedChannel(size)
 
 chan = bchan

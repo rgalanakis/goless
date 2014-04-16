@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+import os
 
 class Backend(object):
     def start(self, func, *args, **kwargs):
@@ -89,5 +90,20 @@ def _make_gevent():
 
     return GeventBackend()
 
-current = _make_stackless()
-#current = _make_gevent()
+_backends = {
+    "stackless":    _make_stackless,
+    "gevent":       _make_gevent
+}
+
+current = None
+
+GOLESS_BACKEND = os.getenv("GOLESS_BACKEND", None)
+if GOLESS_BACKEND is not None:
+    if GOLESS_BACKEND not in _backends:
+        raise RuntimeError("Invalid backend specified. Valid backends are: %s" % _backends.keys())
+    current = _backends[GOLESS_BACKEND]()
+else:
+    try:
+        current = _make_stackless()
+    except ImportError:
+        current = _make_gevent()

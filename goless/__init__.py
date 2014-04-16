@@ -8,10 +8,10 @@ wasn't very effective).
 """
 
 import logging
-import stackless as _stackless
 import sys
 import traceback
 
+from .backends import stackless_backend as _be
 from .channels import chan, ChannelClosed
 from .select import dcase, rcase, scase, select
 
@@ -26,7 +26,7 @@ def on_panic(etype, value, tb):
     By default, logs and exits the process.
     """
     logging.critical(traceback.format_exception(etype, value, tb))
-    _stackless.getmain().throw(SystemExit, 1)
+    _be.propogate_exc(SystemExit, 1)
 
 
 def go(func):
@@ -42,4 +42,4 @@ def go(func):
             f()
         except:
             on_panic(*sys.exc_info())
-    _stackless.tasklet(safe_wrapped)(func)
+    _be.start(safe_wrapped, func)

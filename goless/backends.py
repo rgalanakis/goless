@@ -20,6 +20,11 @@ class Backend(object):
         """Runs the given tasklet/greenlet immediately."""
         raise NotImplementedError()
 
+    def propogate_exc(self, errtype, *args):
+        """Propogates an exception (created via ``errtype(*args)``)
+        so the program hears it and it doesn't die lonely in a tasklet."""
+        raise NotImplementedError()
+
 
 def make_stackless_backend():
     import stackless
@@ -41,6 +46,9 @@ def make_stackless_backend():
 
         def resume(self, tasklet):
             tasklet.run()
+
+        def propogate_exc(self, errtype, *args):
+            stackless.getmain().throw(errtype, *args)
 
     return StacklessBackend()
 

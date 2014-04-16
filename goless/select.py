@@ -1,4 +1,4 @@
-import stackless as _stackless
+from .backends import stackless_backend as _be
 
 
 # noinspection PyPep8Naming,PyShadowingNames
@@ -47,4 +47,4 @@ def select(cases):
         for c in cases:
             if c.ready():
                 return c, c.exec_()
-        _stackless.schedule()
+        _be.yield_()

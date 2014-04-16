@@ -1,6 +1,7 @@
 import collections as _collections
-import stackless as _stackless
 import sys
+
+from .backends import stackless_backend as _be
 
 
 class ChannelClosed(Exception):
@@ -86,7 +87,7 @@ class BufferedChannel(BaseChannel):
         BaseChannel.__init__(self)
         self.maxsize = size
         self.values_deque = _collections.deque()
-        self.waiting_chan = _stackless.channel()
+        self.waiting_chan = _be.channel()
 
     def _send(self, value):
         buffer_size = len(self.values_deque)

@@ -13,7 +13,40 @@ class ChanTests(unittest.TestCase):
         self.assertIsInstance(gochans.chan(1), gochans.BufferedChannel)
 
 
-class SyncChannelTests(unittest.TestCase):
+class ChanTestMixin(object):
+    def makechan(self):
+        raise NotImplementedError()
+
+    def test_send_on_closed_chan_will_raise(self):
+        chan = self.makechan()
+        chan.close()
+        self.assertRaises(gochans.ChannelClosed, chan.send)
+
+    def test_recv_on_closed_chan_raises_after_chan_empties(self):
+        chan = self.makechan()
+
+        run_tasklet(chan.send, 'hi')
+        self.assertEqual(chan.recv(), 'hi')
+        chan.close()
+        self.assertRaises(gochans.ChannelClosed, chan.recv)
+
+    def test_range_with_closed_channel(self):
+        chan = self.makechan()
+        run_tasklet(chan.send, 1)
+        run_tasklet(chan.send, 2)
+        run_tasklet(chan.close)
+        items = [o for o in chan]
+        self.assertEqual(items, [1, 2])
+
+    def test_range_with_open_channel_blocks(self):
+        # TODO: Add tests.
+        pass
+
+
+class SyncChannelTests(unittest.TestCase, ChanTestMixin):
+    def makechan(self):
+        return gochans.SyncChannel()
+
     def test_behavior(self):
         chan = gochans.SyncChannel()
         results = []
@@ -29,7 +62,10 @@ class SyncChannelTests(unittest.TestCase):
         self.assertEqual(results, [1, 2])
 
 
-class AsyncChannelTests(unittest.TestCase):
+class AsyncChannelTests(unittest.TestCase, ChanTestMixin):
+    def makechan(self):
+        return gochans.AsyncChannel()
+
     def test_behavior(self):
         # Obviously we cannot test an infinite buffer,
         # but we can just test a huge one's behavior.
@@ -41,12 +77,15 @@ class AsyncChannelTests(unittest.TestCase):
             pass
 
 
-class BufferedChannelTests(unittest.TestCase):
+class BufferedChannelTests(unittest.TestCase, ChanTestMixin):
+    def makechan(self):
+        return gochans.BufferedChannel(2)
+
     def test_size_must_be_valid(self):
         for size in 0, -1, '', None:
             self.assertRaises(AssertionError, gochans.BufferedChannel, size)
 
-    def test_behavior(self):
+    def test_recv_and_send_with_room_do_not_block(self):
         resultschan = gochans.BufferedChannel(5)
         endchan = gochans.SyncChannel()
 
@@ -66,7 +105,7 @@ class BufferedChannelTests(unittest.TestCase):
         ideal = [square(i) for i in range(5)]
         self.assertEqual(got, ideal)
 
-    def test_buffered_chan_will_block_at_max_size(self):
+    def test_recv_and_send_with_full_buffer_block(self):
         chan = gochans.BufferedChannel(2)
         markers = []
 
@@ -83,7 +122,7 @@ class BufferedChannelTests(unittest.TestCase):
         got.extend([chan.recv(), chan.recv()])
         self.assertEqual(got, [4, 3, 2, 1])
 
-    def test_buffered_chan_will_block_on_recv_with_no_items(self):
+    def test_recv_with_no_items_blocks(self):
         chan = gochans.BufferedChannel(1)
         markers = []
 
@@ -96,27 +135,3 @@ class BufferedChannelTests(unittest.TestCase):
         self.assertEqual(markers, [1])
         chan.send(2)
         self.assertEqual(markers, [1, 2])
-
-    def test_send_on_closed_chan_will_raise(self):
-        chan = gochans.BufferedChannel(1)
-        chan.send()
-        chan.close()
-        self.assertRaises(gochans.ChannelClosed, chan.send)
-
-    def test_recv_on_closed_chan_raises_after_chan_empties(self):
-        chan = gochans.BufferedChannel(1)
-        chan.send('hi')
-        chan.close()
-        self.assertEqual(chan.recv(), 'hi')
-        self.assertRaises(gochans.ChannelClosed, chan.recv)
-
-    def test_range_with_closed_channel(self):
-        chan = gochans.BufferedChannel(2)
-        chan.send(1)
-        chan.send(2)
-        chan.close()
-        items = [o for o in chan]
-        self.assertEqual(items, [1, 2])
-
-    def test_range_with_open_channel_blocks(self):
-        pass

@@ -39,13 +39,22 @@ class _BaseChannel(object):
     def _recv(self):
         raise NotImplementedError()
 
+    def recv_ready(self):
+        """Return True if there is a sender waiting,
+        or there are items in the buffer."""
+        raise NotImplementedError()
+
+    def send_ready(self):
+        """Return True if a receiver is waiting,
+        or the buffer has room."""
+
 
 class _SyncChannel(_BaseChannel):
     _nickname = 'gosyncchan'
 
     def __init__(self):
         _BaseChannel.__init__(self)
-        self.c = _stackless.channel()
+        self.c = schannel()
 
     def _send(self, value):
         self.c.send(value)
@@ -86,8 +95,8 @@ class _BufferedChannel(_BaseChannel):
         _BaseChannel.__init__(self)
         self.maxsize = size
         self.values_deque = _collections.deque()
-        self.waiting_senders_chan = _stackless.channel()
-        self.waiting_recvers_chan = _stackless.channel()
+        self.waiting_senders_chan = schannel()
+        self.waiting_recvers_chan = schannel()
 
     def _send(self, value):
         assert len(self.values_deque) <= self.maxsize
@@ -119,8 +128,14 @@ class _BufferedChannel(_BaseChannel):
 def bchan(size=None):
     """
     Returns a bidirectional channel.
-    A 0 or None size indicates a blocking channel (send will block until a recveiver is available).
-    A positive integer value will give a channel with a queue until it begins to block.
+    A 0 or None size indicates a blocking channel
+    (``send`` will block until a receiver is available,
+    ``recv`` will block until a sender is available).
+    A positive integer value will return a channel with a buffer.
+    Once the buffer is filled, ``send`` will block.
+    When the buffer is empty, ``recv`` will block.
+
+    :rtype: _BaseChannel
     """
     if not size:
         return _SyncChannel()

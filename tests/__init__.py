@@ -1,11 +1,13 @@
-import stacklesslib.util as _sutil
+import stackless as _stackless
 
 
 def run_tasklet(func, *args, **kwargs):
     """Runs a tasklet up until it blocks and releases control."""
-    return _sutil.tasklet_run(func, args, kwargs)
+    t = start_tasklet(func, *args, **kwargs)
+    t.run()
+    return t
 
 
 def start_tasklet(func, *args, **kwargs):
     """Creates and starts a new tasklet."""
-    return _sutil.tasklet_new(func, *args, **kwargs)
+    return _stackless.tasklet(func)(*args, **kwargs)

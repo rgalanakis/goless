@@ -35,3 +35,11 @@ class Examples(unittest.TestCase):
             callbacks.append(val)
 
         self.assertEqual(callbacks, ['one', 'two'])
+
+    def test_range_over_channels(self):
+        # https://gobyexample.com/range-over-channels
+        queue = goless.chan(2)
+        queue.send('one')
+        queue.send('two')
+        elements = [elem for elem in queue]
+        self.assertEqual(elements, ['one', 'two'])

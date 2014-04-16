@@ -44,3 +44,26 @@ class Examples(unittest.TestCase):
         queue.close()
         elements = [elem for elem in queue]
         self.assertEqual(elements, ['one', 'two'])
+
+    def test_worker_pool(self):
+        # https://gobyexample.com/worker-pools
+        jobs_done = []
+        def worker(id, jobs, results):
+            for j in jobs:
+                jobs_done.append('w %s j %s' % (id, j))
+                time.sleep(.01)
+                results.send(j * 2)
+
+        jobs = goless.chan(100)
+        results = goless.chan(100)
+
+        for w in range(1, 4):
+            goless.go(lambda: worker(w, jobs, results))
+
+        for j in range(1, 10):
+            jobs.send(j)
+        jobs.close()
+
+        for a in range(1, 10):
+            results.recv()
+        self.assertEqual(len(jobs_done), 9)

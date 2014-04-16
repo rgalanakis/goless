@@ -26,7 +26,7 @@ class Backend(object):
         raise NotImplementedError()
 
 
-def make_stackless_backend():
+def _make_stackless():
     import stackless
 
     class StacklessBackend(Backend):
@@ -53,4 +53,4 @@ def make_stackless_backend():
     return StacklessBackend()
 
 
-stackless_backend = make_stackless_backend()
+current = _make_stackless()

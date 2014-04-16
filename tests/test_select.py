@@ -1,7 +1,7 @@
 import unittest
 
 import goless
-from goless.backends import stackless_backend as be
+from goless.backends import current as be
 
 
 class RecvCaseTests(unittest.TestCase):

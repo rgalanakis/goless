@@ -11,7 +11,7 @@ import logging
 import sys
 import traceback
 
-from .backends import stackless_backend as _be
+from .backends import current as _be
 from .channels import chan, ChannelClosed
 from .select import dcase, rcase, scase, select
 

@@ -2,7 +2,7 @@ import unittest
 
 import goless
 import goless.channels as gochans
-from goless.backends import stackless_backend as be
+from goless.backends import current as be
 
 
 class ChanTests(unittest.TestCase):

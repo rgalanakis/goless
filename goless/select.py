@@ -1,4 +1,4 @@
-from .backends import stackless_backend as _be
+from .backends import current as _be
 
 
 # noinspection PyPep8Naming,PyShadowingNames

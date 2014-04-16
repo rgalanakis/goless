@@ -1,7 +1,7 @@
 import collections as _collections
 import sys
 
-from .backends import stackless_backend as _be
+from .backends import current as _be
 
 
 class ChannelClosed(Exception):

@@ -101,7 +101,7 @@ class SelectTests(unittest.TestCase):
         start_tasklet(sel)
         self.assertEqual(a, [])
         chan1.send(5)
-        stackless.run(0)
+        stackless.schedule()
         self.assertEqual(len(a), 1)
         chosen, val = a[0]
         self.assertEqual(chosen, cases[1])

@@ -1,8 +1,8 @@
 goless
 ======
 
-The ``goless`` library provides **golang**-like
-semantics built on top of Stackless Python.
+The **goless** library provides **Go** programming language
+semantics built on top of Stackless Python or Gevent.
 For example, the code at https://gobyexample.com/select
 can be roughly implemented as follows::
 
@@ -20,14 +20,14 @@ can be roughly implemented as follows::
     goless.go(func2)
 
     for i in range(2):
-        _, val = goless.select([goless.rcase(c1), goless.rcase(c2)])
+        case, val = goless.select([goless.rcase(c1), goless.rcase(c2)])
         print(val)
 
 It is surely a testament to Go's style that it isn't much less Python code than Go code,
 but I quite like this. Don't you?
 
-Golang: http://www.golang.org
-Stackless Python: http://www.stackless.com
+- The Go Programming Language: http://www.golang.org
+- Stackless Python: http://www.stackless.com
 
 Credits
 =======

@@ -1,7 +1,6 @@
 import collections as _collections
 import stackless as _stackless
-
-from .debug import debug
+import sys
 
 
 class ChannelClosed(Exception):
@@ -17,21 +16,16 @@ class BaseChannel(object):
 
     def send(self, value=None):
         if self._closed:
-            debug('send failed, %s is closed!', self._nickname)
             raise ChannelClosed()
         self._send(value)
-        debug('%s sent', self._nickname)
 
     def _send(self, value):
         raise NotImplementedError()
 
     def recv(self):
-        debug('%s recving', self._nickname)
         if self._closed and not self.recv_ready():
-            debug('recv failed, %s is closed and empty.', self._nickname)
             raise ChannelClosed()
         got = self._recv()
-        debug('%s recved %s', self._nickname, got)
         return got
 
     def _recv(self):
@@ -61,114 +55,95 @@ class BaseChannel(object):
             raise StopIteration
 
 
-class SyncChannel(BaseChannel):
-    """Channel that behaves synchronously.
-    A recv blocks until a sender is available,
-    and a sender blocks until a recver is available.
-    """
-    _nickname = 'gosyncchan'
-
-    def __init__(self):
-        BaseChannel.__init__(self)
-        self.c = _stackless.channel()
-
-    def _send(self, value):
-        self.c.send(value)
-
-    def _recv(self):
-        return self.c.receive()
-
-    def recv_ready(self):
-        return self.c.balance > 0
-
-    def send_ready(self):
-        return self.c.balance < 0
-
-
-class AsyncChannel(BaseChannel):
-    """
-    A channel where send never blocks,
-    and recv blocks if there are no items in the buffer.
-    """
-    _nickname = 'goasyncchan'
-
-    def __init__(self):
-        BaseChannel.__init__(self)
-        self.c = _stackless.channel()
-        self.q = _collections.deque()
-
-    def _send(self, value):
-        self.q.append(value)
-
-    def _recv(self):
-        if not self.q:
-            return self.c.receive()
-        return self.q.popleft()
-
-    def send_ready(self):
-        return True
-
-    def recv_ready(self):
-        return bool(self.q)
-
-
 class BufferedChannel(BaseChannel):
     """
-    BufferedChannel has several situations it must handle:
+    BufferedChannel has several situations it must handle.
 
-    1. When sending, if there is room in the buffer, just append the value and return.
-    2. When sending, if the buffer is full, block until told there is room in the buffer
-       and then append the value.
-       The recv method will signal the sender when there is room (see #4).
-    3. When sending, if there are recvers waiting (see #6),
-       send the value directly to the first waiting recver.
-       Bypass the bugger entirely. The buffer should always be empty in this case.
-    4. Whenever recving, if there are senders waiting for room in the buffer (see #2),
-       signal the first one after popping a value.
-    5. When recving, if there is an item in the buffer, pop it off,
-       execute step #4, and return the popped value.
-    6. When recving, if there is no item in the buffer,
-       block until an item is recved (see #3).
-       This bypasses the buffer entirely because we send the value through the channel.
+    When sending:
+
+    1. If there is a receiver waiting send the value through the channel.
+       A waiting receiver indicates the buffer was empty.
+       It's uncertain in this case if there will be a context switch 
+       (blocking the current task) or not.
+    2. Else if there is no more room in the buffer,
+       also send the value through the channel,
+       blocking until a receiver for the value is available.
+    3. Otherwise just append the value to the deque returning immediately.
+
+    When receiving:
+
+    1. If the buffer has items, pop and return the first value.
+       Before returning, if there is a sender waiting,
+       receive its value and append it to the buffer.
+    2. Else just receive on the channel,
+       blocking until a sender is available.
+       Return the value from the sender.
     """
     _nickname = 'gobufchan'
 
     def __init__(self, size):
-        assert isinstance(size, int) and size > 0
+        assert isinstance(size, int)
         BaseChannel.__init__(self)
         self.maxsize = size
         self.values_deque = _collections.deque()
-        self.waiting_senders_chan = _stackless.channel()
-        self.waiting_recvers_chan = _stackless.channel()
+        self.waiting_chan = _stackless.channel()
 
     def _send(self, value):
-        assert len(self.values_deque) <= self.maxsize
-        if self.waiting_recvers_chan.balance < 0:
-            assert not self.values_deque
-            self.waiting_recvers_chan.send(value)
-            return
-        if len(self.values_deque) == self.maxsize:
-            self.waiting_senders_chan.receive()
-        assert len(self.values_deque) < self.maxsize
-        self.values_deque.append(value)
+        buffer_size = len(self.values_deque)
+        assert buffer_size <= self.maxsize
+        assert ((self.waiting_chan.balance < 0 and buffer_size == 0)
+                or (self.waiting_chan.balance > 0 and buffer_size == self.maxsize)
+                or self.waiting_chan.balance == 0)
+        if self.waiting_chan.balance < 0 or buffer_size == self.maxsize:
+            self.waiting_chan.send(value)
+        else:
+            assert buffer_size < self.maxsize
+            self.values_deque.append(value)
 
     def _recv(self):
         if self.values_deque:
             value = self.values_deque.popleft()
+            if self.waiting_chan.balance > 0:
+                self.values_deque.append(self.waiting_chan.receive())
         else:
-            value = self.waiting_recvers_chan.receive()
-        if self.waiting_senders_chan.balance < 0:
-            self.waiting_senders_chan.send(None)
+            value = self.waiting_chan.receive()
         return value
 
     def recv_ready(self):
-        return self.values_deque or self.waiting_senders_chan.balance < 0
+        return self.values_deque or self.waiting_chan.balance > 0
 
     def send_ready(self):
-        return len(self.values_deque) < self.maxsize or self.waiting_recvers_chan.balance < 0
+        return len(self.values_deque) < self.maxsize or self.waiting_chan.balance < 0
 
 
-def bchan(size=None):
+class SyncChannel(BufferedChannel):
+    """
+    Channel that behaves synchronously.
+    A recv blocks until a sender is available,
+    and a sender blocks until a receiver is available.
+    Implemented as a special case of BufferedChannel
+    where the buffer size is 0.
+    """
+    _nickname = 'gosyncchan'
+
+    def __init__(self):
+        BufferedChannel.__init__(self, 0)
+
+
+class AsyncChannel(BufferedChannel):
+    """
+    A channel where send never blocks,
+    and recv blocks if there are no items in the buffer.
+    Implemented as a special case of BufferedChannel
+    where the buffer size is sys.maxint.
+    """
+    _nickname = 'goasyncchan'
+
+    def __init__(self):
+        BufferedChannel.__init__(self, sys.maxint)
+
+
+def bchan(size=0):
     """
     Returns a bidirectional channel.
     A 0 or None size indicates a blocking channel
@@ -180,7 +155,7 @@ def bchan(size=None):
 
     :rtype: BaseChannel
     """
-    if size in (None, 0):
+    if not size:
         return SyncChannel()
     if size < 0:
         return AsyncChannel()

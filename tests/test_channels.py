@@ -82,7 +82,7 @@ class BufferedChannelTests(unittest.TestCase, ChanTestMixin):
         return gochans.BufferedChannel(2)
 
     def test_size_must_be_valid(self):
-        for size in 0, -1, '', None:
+        for size in '', None:
             self.assertRaises(AssertionError, gochans.BufferedChannel, size)
 
     def test_recv_and_send_with_room_do_not_block(self):
@@ -114,9 +114,10 @@ class BufferedChannelTests(unittest.TestCase, ChanTestMixin):
             markers.append(chan.send(3))
             markers.append(chan.send(2))
             markers.append(chan.send(1))
-        run_tasklet(sendall)
+        send_tasklet = run_tasklet(sendall)
         self.assertEqual(len(markers), 2)
         got = [chan.recv(), chan.recv()]
+        send_tasklet.run()
         self.assertEqual(len(markers), 4)
         self.assertEqual(got, [4, 3])
         got.extend([chan.recv(), chan.recv()])

@@ -67,6 +67,15 @@ class _BaseChannel(object):
         See documentation for details about closed channel behavior."""
         self._closed = True
 
+    def __iter__(self):
+        return self
+
+    def next(self):
+        try:
+            return self.recv()
+        except ChannelClosed:
+            raise StopIteration
+
 
 class _SyncChannel(_BaseChannel):
     _nickname = 'gosyncchan'

@@ -82,3 +82,14 @@ class ChanTests(unittest.TestCase):
         chan.close()
         self.assertEqual(chan.recv(), 'hi')
         self.assertRaises(goless.ChannelClosed, chan.recv)
+
+    def test_range_with_closed_channel(self):
+        chan = goless.chan(2)
+        chan.send(1)
+        chan.send(2)
+        chan.close()
+        items = [o for o in chan]
+        self.assertEqual(items, [1, 2])
+
+    def test_range_with_open_channel_blocks(self):
+        pass

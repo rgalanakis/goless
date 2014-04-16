@@ -41,5 +41,6 @@ class Examples(unittest.TestCase):
         queue = goless.chan(2)
         queue.send('one')
         queue.send('two')
+        queue.close()
         elements = [elem for elem in queue]
         self.assertEqual(elements, ['one', 'two'])

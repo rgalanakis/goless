@@ -1,6 +1,21 @@
 goless: Go-style Python
 =======================
 
+- :ref:`a-intro`
+- :ref:`a-goroutines`
+- :ref:`a-channels`
+- :ref:`a-select`
+- :ref:`a-exceptions`
+- :ref:`a-examples`
+- :ref:`a-backends`
+- :ref:`a-references`
+- :ref:`a-contrib`
+
+.. _a-intro:
+
+Intro
+=====
+
 The **goless** library provides **Go** programming language
 semantics built on top of **Stackless Python** or **gevent**.
 
@@ -26,17 +41,6 @@ can be roughly implemented as follows::
 
 It is surely a testament to Go's style that it isn't much less Python code than Go code,
 but I quite like this. Don't you?
-
-Contents:
-
-- :ref:`a-goroutines`
-- :ref:`a-channels`
-- :ref:`a-select`
-- :ref:`a-exceptions`
-- :ref:`a-examples`
-- :ref:`a-backends`
-- :ref:`a-references`
-- :ref:`a-contrib`
 
 .. _a-goroutines:
 
@@ -98,6 +102,8 @@ Examples
 There are many examples from http://gobyexample.com implemented
 via ``goless``. See the ``tests/test_examples.py`` file.
 More idiomatic examples are encouraged.
+
+.. _a-backends:
 
 Backends
 ========

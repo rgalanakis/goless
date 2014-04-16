@@ -1,10 +1,17 @@
 import unittest
 
 import goless
+import goless.channels as gochans
 from . import run_tasklet
 
 
 class ChanTests(unittest.TestCase):
+    def test_return_types(self):
+        self.assertIsInstance(goless.chan(0), gochans.SyncChannel)
+        self.assertIsInstance(goless.chan(None), gochans.SyncChannel)
+        self.assertIsInstance(goless.chan(-1), gochans.AsyncChannel)
+        self.assertIsInstance(goless.chan(1), gochans.BufferedChannel)
+
     def test_unbuffered_chan(self):
         chan = goless.chan()
         results = []

@@ -7,13 +7,15 @@ from . import run_tasklet
 
 class ChanTests(unittest.TestCase):
     def test_return_types(self):
-        self.assertIsInstance(goless.chan(0), gochans.SyncChannel)
-        self.assertIsInstance(goless.chan(None), gochans.SyncChannel)
-        self.assertIsInstance(goless.chan(-1), gochans.AsyncChannel)
-        self.assertIsInstance(goless.chan(1), gochans.BufferedChannel)
+        self.assertIsInstance(gochans.chan(0), gochans.SyncChannel)
+        self.assertIsInstance(gochans.chan(None), gochans.SyncChannel)
+        self.assertIsInstance(gochans.chan(-1), gochans.AsyncChannel)
+        self.assertIsInstance(gochans.chan(1), gochans.BufferedChannel)
 
-    def test_unbuffered_chan(self):
-        chan = goless.chan()
+
+class SyncChannelTests(unittest.TestCase):
+    def test_behavior(self):
+        chan = gochans.SyncChannel()
         results = []
 
         goless.go(lambda: chan.send(1))
@@ -26,19 +28,27 @@ class ChanTests(unittest.TestCase):
         results = [chan.recv(), chan.recv()]
         self.assertEqual(results, [1, 2])
 
-    def test_infinitely_buffered_chan(self):
+
+class AsyncChannelTests(unittest.TestCase):
+    def test_behavior(self):
         # Obviously we cannot test an infinite buffer,
         # but we can just test a huge one's behavior.
-        chan = goless.chan(-1)
+        chan = gochans.AsyncChannel()
         for _ in xrange(10000):
             chan.send()
         chan.close()
         for _ in chan:
             pass
 
-    def test_buffered_chan_will_buffer(self):
-        resultschan = goless.chan(5)
-        endchan = goless.chan()
+
+class BufferedChannelTests(unittest.TestCase):
+    def test_size_must_be_valid(self):
+        for size in 0, -1, '', None:
+            self.assertRaises(AssertionError, gochans.BufferedChannel, size)
+
+    def test_behavior(self):
+        resultschan = gochans.BufferedChannel(5)
+        endchan = gochans.SyncChannel()
 
         def square(x):
             return x * x
@@ -57,7 +67,7 @@ class ChanTests(unittest.TestCase):
         self.assertEqual(got, ideal)
 
     def test_buffered_chan_will_block_at_max_size(self):
-        chan = goless.chan(2)
+        chan = gochans.BufferedChannel(2)
         markers = []
 
         def sendall():
@@ -74,7 +84,7 @@ class ChanTests(unittest.TestCase):
         self.assertEqual(got, [4, 3, 2, 1])
 
     def test_buffered_chan_will_block_on_recv_with_no_items(self):
-        chan = goless.chan(1)
+        chan = gochans.BufferedChannel(1)
         markers = []
 
         def recvall():
@@ -88,20 +98,20 @@ class ChanTests(unittest.TestCase):
         self.assertEqual(markers, [1, 2])
 
     def test_send_on_closed_chan_will_raise(self):
-        chan = goless.chan(1)
+        chan = gochans.BufferedChannel(1)
         chan.send()
         chan.close()
-        self.assertRaises(goless.ChannelClosed, chan.send)
+        self.assertRaises(gochans.ChannelClosed, chan.send)
 
     def test_recv_on_closed_chan_raises_after_chan_empties(self):
-        chan = goless.chan(1)
+        chan = gochans.BufferedChannel(1)
         chan.send('hi')
         chan.close()
         self.assertEqual(chan.recv(), 'hi')
-        self.assertRaises(goless.ChannelClosed, chan.recv)
+        self.assertRaises(gochans.ChannelClosed, chan.recv)
 
     def test_range_with_closed_channel(self):
-        chan = goless.chan(2)
+        chan = gochans.BufferedChannel(2)
         chan.send(1)
         chan.send(2)
         chan.close()

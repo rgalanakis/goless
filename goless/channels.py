@@ -113,20 +113,23 @@ class BufferedChannel(GoChannel):
     """
 
     def __init__(self, size):
-        assert isinstance(size, int)
+        assert isinstance(size, int) and size >= 0
         GoChannel.__init__(self)
         self.maxsize = size
-        self.values_deque = _collections.deque()
+        self.values_deque = _collections.deque() if size else ()
         self.waiting_chan = _be.channel()
 
     def _send(self, value):
         buffer_size = len(self.values_deque)
+        chan_balance = self.waiting_chan.balance
         assert buffer_size <= self.maxsize
-        assert ((self.waiting_chan.balance < 0 and buffer_size == 0)
-                or (self.waiting_chan.balance > 0 and buffer_size == self.maxsize)
-                or self.waiting_chan.balance == 0)
-        if self.waiting_chan.balance < 0 or buffer_size == self.maxsize:
+        assert ((chan_balance < 0 and buffer_size == 0)
+                or (chan_balance > 0 and buffer_size == self.maxsize)
+                or chan_balance == 0)
+        if chan_balance < 0 or buffer_size == self.maxsize:
             self.waiting_chan.send(value)
+            if self._closed:
+                raise ChannelClosed("Channel closed while sending")
         else:
             assert buffer_size < self.maxsize
             self.values_deque.append(value)
@@ -138,6 +141,8 @@ class BufferedChannel(GoChannel):
                 self.values_deque.append(self.waiting_chan.receive())
         else:
             value = self.waiting_chan.receive()
+            if self._closed:
+                raise ChannelClosed("Channel closed while receiving")
         return value
 
     def recv_ready(self):
@@ -146,6 +151,17 @@ class BufferedChannel(GoChannel):
     def send_ready(self):
         return len(self.values_deque) < self.maxsize or self.waiting_chan.balance < 0
 
+    def close(self):
+        # NOTE, HACK: This next yield gives a chance to all blocked receivers to return
+        # before the channel is actually closed and then not raise.
+        # We might be able to properly track this state and then not have to yield here though.
+        _be.yield_()
+        GoChannel.close(self)
+        balance = self.waiting_chan.balance
+        for _ in xrange(balance, 0):
+            self.waiting_chan.send(None)
+        for _ in xrange(balance):
+            self.waiting_chan.receive()
 
 class SyncChannel(BufferedChannel):
     """

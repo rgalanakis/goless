@@ -1,15 +1,14 @@
 import unittest
+from . import BaseTests
 
 import goless
 from goless.backends import current as be
 
 
-class GoTests(unittest.TestCase):
+class GoTests(BaseTests):
 
     def setUp(self):
-        # Make sure unhandled exceptions are observed in the context
-        # of a single test.
-        be.yield_()
+        BaseTests.setUp(self)
 
         oldpanic = goless.on_panic
         self.panic_calls = []

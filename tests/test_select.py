@@ -1,13 +1,13 @@
-import unittest
-
 import goless
 from goless.backends import current as be
+from . import BaseTests
 
 
-class RecvCaseTests(unittest.TestCase):
+class RecvCaseTests(BaseTests):
     chansize = 1
 
     def setUp(self):
+        BaseTests.setUp(self)
         self.ch = goless.chan(self.chansize)
         self.ca = goless.rcase(self.ch)
 
@@ -33,10 +33,11 @@ class RecvCaseUnbufferedTests(RecvCaseTests):
     chansize = 0
 
 
-class SendCaseTests(unittest.TestCase):
+class SendCaseTests(BaseTests):
     chansize = 1
 
     def setUp(self):
+        BaseTests.setUp(self)
         self.ch = goless.chan(self.chansize)
         self.sendval = 1
         self.ca = goless.scase(self.ch, self.sendval)
@@ -70,8 +71,9 @@ class SendCaseUnbufferedTests(SendCaseTests):
     chansize = 0
 
 
-class SelectTests(unittest.TestCase):
+class SelectTests(BaseTests):
     def setUp(self):
+        BaseTests.setUp(self)
         self.chan1 = goless.chan()
 
     def test_select_uses_default(self):

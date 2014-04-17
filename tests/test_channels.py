@@ -1,11 +1,12 @@
 import unittest
+from . import BaseTests
 
 import goless
 import goless.channels as gochans
 from goless.backends import current as be
 
 
-class ChanTests(unittest.TestCase):
+class ChanTests(BaseTests):
     def test_return_types(self):
         self.assertIsInstance(gochans.chan(0), gochans.SyncChannel)
         self.assertIsInstance(gochans.chan(None), gochans.SyncChannel)
@@ -32,18 +33,40 @@ class ChanTestMixin(object):
 
     def test_range_with_closed_channel(self):
         chan = self.makechan()
-        be.run(chan.send, 1)
-        be.run(chan.send, 2)
-        be.run(chan.close)
+        sendCount = min(chan.maxsize, 5)
+        data2send = range(sendCount)
+        for data in data2send:
+            be.run(chan.send, data)
+        chan.close()
         items = [o for o in chan]
-        self.assertEqual(items, [1, 2])
+        self.assertEqual(items, data2send)
 
     def test_range_with_open_channel_blocks(self):
         # TODO: Add tests.
         pass
 
+    def _test_channel_raises_when_closed(self, channelMethodName):
+        chan = self.makechan()
+        marker = []
 
-class SyncChannelTests(unittest.TestCase, ChanTestMixin):
+        def catch_raise():
+            try:
+                method = getattr(chan, channelMethodName)
+                method()
+            except gochans.ChannelClosed:
+                marker.append(1)
+            marker.append(2)
+
+        be.run(catch_raise)
+        chan.close()
+        be.yield_()
+        self.assertEqual(marker, [1, 2])
+
+    def test_channel_recv_raises_when_closed(self):
+        self._test_channel_raises_when_closed("recv")
+
+
+class SyncChannelTests(BaseTests, ChanTestMixin):
     def makechan(self):
         return gochans.SyncChannel()
 
@@ -61,8 +84,11 @@ class SyncChannelTests(unittest.TestCase, ChanTestMixin):
         results = [chan.recv(), chan.recv()]
         self.assertEqual(results, [1, 2])
 
+    def test_channel_send_raises_when_closed(self):
+        self._test_channel_raises_when_closed("send")
 
-class AsyncChannelTests(unittest.TestCase, ChanTestMixin):
+
+class AsyncChannelTests(BaseTests, ChanTestMixin):
     def makechan(self):
         return gochans.AsyncChannel()
 
@@ -77,7 +103,7 @@ class AsyncChannelTests(unittest.TestCase, ChanTestMixin):
             pass
 
 
-class BufferedChannelTests(unittest.TestCase, ChanTestMixin):
+class BufferedChannelTests(BaseTests, ChanTestMixin):
     def makechan(self):
         return gochans.BufferedChannel(2)
 

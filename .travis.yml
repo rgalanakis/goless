@@ -1,0 +1,12 @@
+language: python
+python:
+  - "2.7"
+env:
+  - TOX_ENV=gevent
+install: "pip install tox --download-cache $HOME/.pip-cache"
+script:
+  tox -e $TOX_ENV
+cache:
+  directories:
+    - .tox
+    - $HOME/.pip-cache/

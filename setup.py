@@ -1,11 +1,8 @@
 from setuptools import setup
 
-from goless import version
-
-
 setup(
     name='goless',
-    version=version,
+    version='0.0.1',
     author='Rob Galanakis',
     author_email='rob.galanakis@gmail.com',
     description="goless puts Go's channels and select into Python.",

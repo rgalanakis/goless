@@ -5,17 +5,31 @@ from .backends import current as _be
 
 
 class ChannelClosed(Exception):
-    """Exception raised when send is called on a closed channel,
-    or recv is called on a closed channel with an empty buffer."""
+    """
+    Exception raised to indicate a channel is closing or has closed.
+    """
 
 
-class BaseChannel(object):
-    _nickname = None
-
+class GoChannel(object):
+    """
+    A **Go**-like channel that can be sent to, received from,
+    and closed.
+    """
     def __init__(self):
         self._closed = False
 
     def send(self, value=None):
+        """
+        Sends the value. Blocking behavior depends on the channel type.
+        Unbufferred channels block if no receiver is waiting.
+        Buffered channels block if the buffer is full.
+        Asynchronous channels never block on send.
+
+        If the channel is already closed,
+        :class:`goless.ChannelClosed` will be raised.
+        If the channel closes during a blocking ``send``,
+        :class:`goless.ChannelClosed` will be raised. (#TODO)
+        """
         if self._closed:
             raise ChannelClosed()
         self._send(value)
@@ -24,6 +38,13 @@ class BaseChannel(object):
         raise NotImplementedError()
 
     def recv(self):
+        """
+        Receive a value from the channel.
+        Receiving will always block if no value is available.
+        If the channel is already closed, :class:`goless.ChannelClosed` will be raised.
+        If the channel closes during a blocking ``recv``,
+        :class:`goless.ChannelClosed` will be raised. (#TODO)
+        """
         if self._closed and not self.recv_ready():
             raise ChannelClosed()
         got = self._recv()
@@ -33,17 +54,25 @@ class BaseChannel(object):
         raise NotImplementedError()
 
     def recv_ready(self):
-        """Return True if there is a sender waiting,
-        or there are items in the buffer."""
+        """
+        Return True if there is a sender waiting,
+        or there are items in the buffer.
+        """
         raise NotImplementedError()
 
     def send_ready(self):
-        """Return True if a receiver is waiting,
-        or the buffer has room."""
+        """
+        Return True if a receiver is waiting,
+        or the buffer has room.
+        """
+        raise NotImplementedError()
 
     def close(self):
-        """Closes the channel, not allowing further communication.
-        See documentation for details about closed channel behavior."""
+        """
+        Closes the channel, not allowing further communication.
+        Any blocking senders or receivers will be woken up and raise :class:`goless.ChannelClosed`.
+        Receiving or sending to a closed channel will raise :class:`goless.ChannelClosed`.
+        """
         self._closed = True
 
     def __iter__(self):
@@ -56,7 +85,7 @@ class BaseChannel(object):
             raise StopIteration
 
 
-class BufferedChannel(BaseChannel):
+class BufferedChannel(GoChannel):
     """
     BufferedChannel has several situations it must handle.
 
@@ -80,11 +109,10 @@ class BufferedChannel(BaseChannel):
        blocking until a sender is available.
        Return the value from the sender.
     """
-    _nickname = 'gobufchan'
 
     def __init__(self, size):
         assert isinstance(size, int)
-        BaseChannel.__init__(self)
+        GoChannel.__init__(self)
         self.maxsize = size
         self.values_deque = _collections.deque()
         self.waiting_chan = _be.channel()
@@ -125,7 +153,6 @@ class SyncChannel(BufferedChannel):
     Implemented as a special case of BufferedChannel
     where the buffer size is 0.
     """
-    _nickname = 'gosyncchan'
 
     def __init__(self):
         BufferedChannel.__init__(self, 0)
@@ -138,28 +165,30 @@ class AsyncChannel(BufferedChannel):
     Implemented as a special case of BufferedChannel
     where the buffer size is sys.maxint.
     """
-    _nickname = 'goasyncchan'
 
     def __init__(self):
         BufferedChannel.__init__(self, sys.maxint)
 
 
-def bchan(size=0):
+def chan(size=0):
     """
     Returns a bidirectional channel.
+
     A 0 or None size indicates a blocking channel
     (``send`` will block until a receiver is available,
     ``recv`` will block until a sender is available).
+
     A positive integer value will return a channel with a buffer.
     Once the buffer is filled, ``send`` will block.
     When the buffer is empty, ``recv`` will block.
 
-    :rtype: BaseChannel
+    A negative integer will return a channel that will never block on ``send``.
+    ``recv`` will block if the buffer is empty.
+
+    :rtype: GoChannel
     """
     if not size:
         return SyncChannel()
     if size < 0:
         return AsyncChannel()
     return BufferedChannel(size)
-
-chan = bchan

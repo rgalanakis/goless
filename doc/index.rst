@@ -67,6 +67,9 @@ about how they actually work.
 
 .. autofunction:: goless.chan
 
+.. autoclass:: goless.channels.GoChannel
+    :members: send, recv, close
+
 .. _a-select:
 
 The ``select`` function

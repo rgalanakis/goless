@@ -1,3 +1,8 @@
+.. image:: https://travis-ci.org/rgalanakis/goless.svg?branch=master
+    :target: https://travis-ci.org/rgalanakis/goless
+    :alt: build status
+    :align: right
+   
 goless
 ======
 

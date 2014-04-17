@@ -112,3 +112,7 @@ class SelectTests(unittest.TestCase):
         chosen, val = goless.select(cases)
         self.assertIs(chosen, cases[0])
         self.assertIsNone(val)
+
+    def test_raises_if_multiple_default_cases(self):
+        with self.assertRaises(AssertionError):
+            goless.select([goless.dcase(), goless.dcase()])

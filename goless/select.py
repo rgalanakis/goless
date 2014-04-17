@@ -55,6 +55,7 @@ def select(cases):
         if c.ready():
             return c, c.exec_()
         if isinstance(c, dcase):
+            assert default is None, 'Only one default case is allowd.'
             default = c
     if default is not None:
         # noinspection PyCallingNonCallable

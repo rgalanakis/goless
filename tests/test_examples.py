@@ -2,6 +2,7 @@
 Idiomatic Go examples converted to use goless.
 """
 
+from __future__ import print_function
 import time
 import unittest
 
@@ -67,3 +68,16 @@ class Examples(unittest.TestCase):
         for a in range(1, 10):
             results.recv()
         self.assertEqual(len(jobs_done), 9)
+
+    def test_case_switch(self):
+        chan = goless.chan()
+        cases = [goless.rcase(chan), goless.scase(chan, 1), goless.dcase()]
+        chosen, value = goless.select(cases)
+        if chosen is cases[0]:
+            print('Received %s' % value)
+        elif chosen is cases[1]:
+            assert value is None
+            print('Sent.')
+        else:
+            assert chosen is cases[2], chosen
+            print('Default...')

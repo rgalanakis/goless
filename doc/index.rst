@@ -78,8 +78,33 @@ The ``select`` function
 Go's ``select`` statement is implemented through the :func:`goless.select` function.
 Because Python lacks anonymous blocks (*multiline lambdas*),
 :func:`goless.select` works like Go's ``reflect.Select`` function.
+Callers should create any number of :class:`goless.case` classes
+that are passed into :func:`goless.select`.
+The function returns the chosen case, which the caller will usually switch off of.
+For example::
+
+    chan = goless.chan()
+    cases = [goless.rcase(chan), goless.scase(chan, 1), goless.dcase()]
+    chosen, value = goless.select(cases)
+    if chosen is cases[0]:
+        print('Received %s' % value)
+    elif chosen is cases[1]:
+        assert value is None
+        print('Sent.')
+    else:
+        assert chosen is cases[2]
+        print('Default...')
+
+Callers should never have to do anything with cases,
+other than create and switch off of them.
 
 .. autofunction:: goless.select
+
+.. autoclass:: goless.dcase
+
+.. autoclass:: goless.rcase
+
+.. autoclass:: goless.scase
 
 .. _a-exceptions:
 

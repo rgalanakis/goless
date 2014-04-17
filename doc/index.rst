@@ -19,8 +19,9 @@ Intro
 The **goless** library provides **Go** programming language
 semantics built on top of **Stackless Python** or **gevent**.
 
-For example, the code at https://gobyexample.com/select
-can be roughly implemented as follows::
+For an example of what **goless** can do,
+here is the Go program at https://gobyexample.com/select
+reimplemented with **goless**::
 
     c1 = goless.chan()
     c2 = goless.chan()
@@ -129,7 +130,8 @@ Examples
 
 There are many examples from http://gobyexample.com implemented
 via ``goless``. See the ``tests/test_examples.py`` file.
-More idiomatic examples are encouraged.
+If you have an idiomatic Go example you'd like converted,
+please see :ref:`a-contrib` below.
 
 .. _a-backends:
 
@@ -152,6 +154,9 @@ a ``RuntimeError`` is raised on ``goless`` import.
 References
 ==========
 
+- **goless** on GitHub: https://github.com/rgalanakis/goless
+- **goless** on Read the Docs: http://goless.readthedocs.org/
+- **goless** on Travis-CI: https://travis-ci.org/rgalanakis/goless
 - The Go Programming Language: http://www.golang.org
 - Stackless Python: http://www.stackless.com
 - gevent: http://gevent.org/
@@ -167,6 +172,7 @@ Contributing
 
 I am definitely not a Go expert,
 so improvements to make things more idiomatic are very welcome.
+Please create an issue or pull request on GitHub: https://github.com/rgalanakis/goless
 
 ``goless`` was created by a number of people  at the PyCon 2014 sprints.
 Even a small library like ``goless`` is the product of lots of collaboration.

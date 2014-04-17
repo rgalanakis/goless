@@ -1,4 +1,3 @@
-import unittest
 from . import BaseTests
 
 import goless

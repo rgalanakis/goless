@@ -1,4 +1,3 @@
-import unittest
 from . import BaseTests
 
 import goless
@@ -45,13 +44,13 @@ class ChanTestMixin(object):
         # TODO: Add tests.
         pass
 
-    def _test_channel_raises_when_closed(self, channelMethodName):
+    def _test_channel_raises_when_closed(self, chan_method_name):
         chan = self.makechan()
+        method = getattr(chan, chan_method_name)
         marker = []
 
         def catch_raise():
             try:
-                method = getattr(chan, channelMethodName)
                 method()
             except gochans.ChannelClosed:
                 marker.append(1)
@@ -63,7 +62,7 @@ class ChanTestMixin(object):
         self.assertEqual(marker, [1, 2])
 
     def test_channel_recv_raises_when_closed(self):
-        self._test_channel_raises_when_closed("recv")
+        self._test_channel_raises_when_closed('recv')
 
 
 class SyncChannelTests(BaseTests, ChanTestMixin):
@@ -85,7 +84,7 @@ class SyncChannelTests(BaseTests, ChanTestMixin):
         self.assertEqual(results, [1, 2])
 
     def test_channel_send_raises_when_closed(self):
-        self._test_channel_raises_when_closed("send")
+        self._test_channel_raises_when_closed('send')
 
 
 class AsyncChannelTests(BaseTests, ChanTestMixin):

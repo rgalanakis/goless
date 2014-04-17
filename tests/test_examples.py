@@ -4,7 +4,6 @@ Idiomatic Go examples converted to use goless.
 
 from __future__ import print_function
 import time
-import unittest
 from . import BaseTests
 
 import goless

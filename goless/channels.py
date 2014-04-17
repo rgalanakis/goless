@@ -152,16 +152,25 @@ class BufferedChannel(GoChannel):
         return len(self.values_deque) < self.maxsize or self.waiting_chan.balance < 0
 
     def close(self):
-        # NOTE, HACK: This next yield gives a chance to all blocked receivers to return
-        # before the channel is actually closed and then not raise.
-        # We might be able to properly track this state and then not have to yield here though.
+        # This next yield gives a chance to all blocked receivers to return
+        # before the channel is actually closed.
+        # We think this is more "fair",
+        # as these are blocking-but-ready tasklets that should have
+        # the opportunity to finish.
+        # Otherwise, for example, a sender could successfully send
+        # but still get a ChannelClosed error.
         _be.yield_()
+        # To make sure all pending tasklets are woken up,
+        # we mark the channel closed and then spam out sends or receives if needed.
+        # The tasklets will wake up, see the channel is closed,
+        # and raise a ChannelClosed error.
         GoChannel.close(self)
         balance = self.waiting_chan.balance
         for _ in xrange(balance, 0):
             self.waiting_chan.send(None)
         for _ in xrange(balance):
             self.waiting_chan.receive()
+
 
 class SyncChannel(BufferedChannel):
     """

@@ -33,7 +33,7 @@ def go(func):
     """
     Run a function in a new tasklet, like a goroutine.
     If the goroutine raises an unhandled exception (*panics*),
-    the :func:`on_panic` will be called,
+    the :func:`goless.on_panic` will be called,
     which by default logs the error and exits the process.
     """
     def safe_wrapped(f):

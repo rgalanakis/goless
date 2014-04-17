@@ -45,7 +45,7 @@ but I quite like this. Don't you?
 
 .. _a-goroutines:
 
-goroutines
+Goroutines
 ==========
 
 The :func:`goless.go` function mimics Go's goroutines by, unsurprisingly,
@@ -58,7 +58,7 @@ If an unhandled exception occurs in a goroutine, :func:`goless.on_panic` is call
 
 .. _a-channels:
 
-channels
+Channels
 ========
 
 There are three types of channels available in ``goless``.
@@ -71,6 +71,8 @@ about how they actually work.
 .. autoclass:: goless.channels.GoChannel
     :members: send, recv, close
 
+.. autoclass:: goless.ChannelClosed
+
 .. _a-select:
 
 The ``select`` function
@@ -78,7 +80,7 @@ The ``select`` function
 
 Go's ``select`` statement is implemented through the :func:`goless.select` function.
 Because Python lacks anonymous blocks (*multiline lambdas*),
-:func:`goless.select` works like Go's ``reflect.Select`` function.
+:func:`goless.select` works like Go's `reflect.Select`_ function.
 Callers should create any number of :class:`goless.case` classes
 that are passed into :func:`goless.select`.
 The function returns the chosen case, which the caller will usually switch off of.
@@ -194,3 +196,5 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+.. _reflect.Select: http://golang.org/pkg/reflect/#Select

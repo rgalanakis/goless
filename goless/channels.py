@@ -14,6 +14,8 @@ class GoChannel(object):
     """
     A **Go**-like channel that can be sent to, received from,
     and closed.
+    Callers should never create this directly.
+    Always use :func:`goless.chan` to create channels.
     """
     def __init__(self):
         self._closed = False
@@ -175,17 +177,18 @@ def chan(size=0):
     Returns a bidirectional channel.
 
     A 0 or None size indicates a blocking channel
-    (``send`` will block until a receiver is available,
-    ``recv`` will block until a sender is available).
+    (the ``send`` method will block until a receiver is available,
+    and the ``recv`` method will block until a sender is available).
 
     A positive integer value will return a channel with a buffer.
-    Once the buffer is filled, ``send`` will block.
-    When the buffer is empty, ``recv`` will block.
+    Once the buffer is filled, the ``send`` method will block.
+    When the buffer is empty, the ``recv`` method will block.
 
-    A negative integer will return a channel that will never block on ``send``.
-    ``recv`` will block if the buffer is empty.
+    A negative integer will return a channel that will
+    never block when the ``send`` method is called.
+    The ``recv`` method will block if the buffer is empty.
 
-    :rtype: GoChannel
+    :rtype: goless.channels.GoChannel
     """
     if not size:
         return SyncChannel()

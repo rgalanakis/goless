@@ -45,10 +45,13 @@ def select(cases):
     If there is no default case and no case is ready,
     block until one becomes ready.
 
+    See Go's ``reflect.Select`` method for an analog
+    (http://golang.org/pkg/reflect/#Select).
+
     :param cases: List of case instances, such as
       :class:`goless.rcase`, :class:`goless.scase`, or :class:`goless.dcase`.
     :return: ``(chosen case, received value)``.
-      If the chosen case is not an ``rcase``, it will be None.
+      If the chosen case is not an :class:`goless.rcase`, it will be None.
     """
     default = None
     for c in cases:

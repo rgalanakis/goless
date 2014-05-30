@@ -1,5 +1,6 @@
 import os
 
+
 class Backend(object):
     def start(self, func, *args, **kwargs):
         """Starts a tasklet/greenlet."""
@@ -90,16 +91,18 @@ def _make_gevent():
     return GeventBackend()
 
 _backends = {
-    "stackless":    _make_stackless,
-    "gevent":       _make_gevent
+    "stackless": _make_stackless,
+    "gevent": _make_gevent
 }
 
 current = None
 
-GOLESS_BACKEND = os.getenv("GOLESS_BACKEND", None)
-if GOLESS_BACKEND is not None:
+GOLESS_BACKEND = os.getenv("GOLESS_BACKEND", '')
+if GOLESS_BACKEND:
     if GOLESS_BACKEND not in _backends:
-        raise RuntimeError("Invalid backend specified. Valid backends are: %s" % _backends.keys())
+        raise RuntimeError(
+            "Invalid backend %r specified. Valid backends are: %s"
+            % (GOLESS_BACKEND, _backends.keys()))
     current = _backends[GOLESS_BACKEND]()
 else:
     try:

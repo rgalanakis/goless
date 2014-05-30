@@ -28,15 +28,14 @@ def bench_channel(chan_size):
         c.recv()
         count += 1
     end = time.clock()
-    assert count == QUEUE_LEN, '%s != %s' % (count, QUEUE_LEN)
     return end - start
 
 
 def bench_channels():
-    print('Benchmarking channels:')
+    print('  Channels:')
     for size, name in CHANSIZE_AND_NAMES:
         took = bench_channel(size)
-        print ('  %ss: %s' % (took, name))
+        print ('    %s: %ss' % (name, took))
 
 
 def bench_select(use_default):
@@ -64,14 +63,15 @@ def bench_select(use_default):
 
 
 def bench_selects():
-    print('Benchmarking select:')
+    print('  Select:')
     took_nodefault = bench_select(False)
-    print('  %ss: No default case.' % took_nodefault)
+    print('    No default: %ss' % took_nodefault)
     took_withdefault = bench_select(True)
-    print('  %ss: With default case.' % took_withdefault)
+    print('    With default: %ss' % took_withdefault)
 
 
 if __name__ == '__main__':
-    print('Using backend %s' % backends.current.__class__.__name__)
+    print('Benchmarking with backend %s:' %
+          backends.current.__class__.__name__)
     bench_channels()
     bench_selects()

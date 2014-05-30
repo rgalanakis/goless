@@ -2,7 +2,12 @@
     :target: https://travis-ci.org/rgalanakis/goless
     :alt: build status
     :align: right
-   
+
+.. image:: https://img.shields.io/coveralls/rgalanakis/goless.svg
+    :target: https://coveralls.io/r/rgalanakis/goless
+    :alt: coverage status
+    :align: right
+
 goless
 ======
 

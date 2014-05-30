@@ -3,8 +3,8 @@
 Intro
 =====
 
-The **goless** library provides **Go** programming language
-semantics built on top of **Stackless Python** or **gevent**.
+The `goless library`_ provides **Go** programming language
+semantics built on top of `Stackless Python`_ or gevent_.
 
 For an example of what **goless** can do,
 here is the Go program at https://gobyexample.com/select
@@ -185,3 +185,6 @@ Indices and tables
 * :ref:`search`
 
 .. _reflect.Select: http://golang.org/pkg/reflect/#Select
+.. _goless library: https://github.com/rgalanakis/goless
+.. _Stackless Python: http://www.stackless.com/
+.. _gevent: http://www.gevent.org/

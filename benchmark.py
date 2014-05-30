@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import sys
 import time
 
 from goless import backends, chan, go, selecting
@@ -11,6 +12,12 @@ CHANSIZE_AND_NAMES = (
     (-1, 'Async'),
     (1000, 'Buffered(1000)')
 )
+
+FILE = sys.stdout
+
+
+def report(s, *args):
+    print(s % args, file=FILE)
 
 
 def bench_channel(chan_size):
@@ -32,10 +39,10 @@ def bench_channel(chan_size):
 
 
 def bench_channels():
-    print('  Channels:')
+    report('  Channels:')
     for size, name in CHANSIZE_AND_NAMES:
         took = bench_channel(size)
-        print ('    %s: %ss' % (name, took))
+        report('    %s: %ss', name, took)
 
 
 def bench_select(use_default):
@@ -63,15 +70,22 @@ def bench_select(use_default):
 
 
 def bench_selects():
-    print('  Select:')
+    report('  Select:')
     took_nodefault = bench_select(False)
-    print('    No default: %ss' % took_nodefault)
+    report('    No default: %ss', took_nodefault)
     took_withdefault = bench_select(True)
-    print('    With default: %ss' % took_withdefault)
+    report('    With default: %ss', took_withdefault)
+
+
+def main():
+    global FILE
+    if len(sys.argv) > 1:
+        FILE = open(sys.argv[1], 'w')
+    report('Benchmarking with backend %s:',
+           backends.current.__class__.__name__)
+    bench_channels()
+    bench_selects()
 
 
 if __name__ == '__main__':
-    print('Benchmarking with backend %s:' %
-          backends.current.__class__.__name__)
-    bench_channels()
-    bench_selects()
+    main()

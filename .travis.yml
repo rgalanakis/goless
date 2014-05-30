@@ -2,10 +2,14 @@ language: python
 python:
   - "2.7"
 env:
-  - TOX_ENV=27gevent
-install: "pip install tox --download-cache $HOME/.pip-cache"
+  - TOX_ENV=coverageenv
+install:
+  - "pip install tox --download-cache $HOME/.pip-cache"
+  - "pip install coveralls"
 script:
   tox -e $TOX_ENV
+after_success:
+  coveralls
 cache:
   directories:
     - .tox

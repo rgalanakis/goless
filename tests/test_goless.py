@@ -1,7 +1,9 @@
-from . import BaseTests
+import mock
+import sys
 
 import goless
 from goless.backends import current as be
+from . import BaseTests
 
 
 class GoTests(BaseTests):
@@ -31,3 +33,16 @@ class GoTests(BaseTests):
         goless.go(raiseit)
         be.yield_()
         self.assertEqual(len(self.panic_calls), 1)
+
+
+class PanicTests(BaseTests):
+    def test_panic_logs_and_exits(self):
+        try:
+            assert False
+        except AssertionError:
+            args = sys.exc_info()
+
+        with mock.patch('logging.critical') as logmock:
+            with self.assertRaises(SystemExit):
+                goless.on_panic(*args)
+        self.assertEqual(logmock.call_count, 1)

@@ -28,7 +28,9 @@ class Backend(object):
         raise NotImplementedError()
 
 
-def _make_stackless():
+# We can't easily use stackless on our CI,
+# so don't worry about covering it.
+def _make_stackless():  # pragma: no cover
     import stackless
 
     class StacklessBackend(Backend):

@@ -13,7 +13,7 @@ CHANSIZE_AND_NAMES = (
 )
 
 
-def _bench_channel(chan_size):
+def bench_channel(chan_size):
     c = chan(chan_size)
 
     def func():
@@ -32,9 +32,13 @@ def _bench_channel(chan_size):
     return end - start
 
 
-if __name__ == '__main__':
-    print('Using backend %s' % backends.current.__class__.__name__)
+def bench_channels():
     print('Benchmarking channels:')
     for size, name in CHANSIZE_AND_NAMES:
-        took = _bench_channel(size)
+        took = bench_channel(size)
         print ('  %s: %s' % (took, name))
+
+
+if __name__ == '__main__':
+    print('Using backend %s' % backends.current.__class__.__name__)
+    bench_channels()

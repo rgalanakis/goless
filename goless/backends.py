@@ -92,22 +92,25 @@ def _make_gevent():
 
     return GeventBackend()
 
-_backends = {
-    "stackless": _make_stackless,
-    "gevent": _make_gevent
+
+_default_backends = {
+    'stackless': _make_stackless,
+    'gevent': _make_gevent
 }
 
-current = None
 
-GOLESS_BACKEND = os.getenv("GOLESS_BACKEND", '')
-if GOLESS_BACKEND:
-    if GOLESS_BACKEND not in _backends:
-        raise RuntimeError(
-            "Invalid backend %r specified. Valid backends are: %s"
-            % (GOLESS_BACKEND, _backends.keys()))
-    current = _backends[GOLESS_BACKEND]()
-else:
-    try:
-        current = _make_stackless()
-    except ImportError:
-        current = _make_gevent()
+def calculate_backend(name_from_env, backends=None):
+    if backends is None:
+        backends = _default_backends
+    if name_from_env:
+        if name_from_env not in backends:
+            raise RuntimeError(
+                'Invalid backend %r specified. Valid backends are: %s'
+                % (name_from_env, _default_backends.keys()))
+        return backends[name_from_env]()
+    for maker in backends.values():
+        return maker()
+    raise RuntimeError('No backend could be created.')
+
+
+current = calculate_backend(os.getenv('GOLESS_BACKEND', ''))

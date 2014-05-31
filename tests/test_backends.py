@@ -23,6 +23,13 @@ class CalcBackendTests(BaseTests):
         be = self.calc('')
         self.assertIn(be, [v() for v in test_backends.values()])
 
-    def test_all_invalid(self):
+    def test_no_backends(self):
         with self.assertRaises(RuntimeError):
             self.calc('', {})
+
+    def test_invalid_backends(self):
+        def raiseit():
+            raise KeyError()
+
+        with self.assertRaises(RuntimeError):
+            self.calc('', {'a': raiseit})

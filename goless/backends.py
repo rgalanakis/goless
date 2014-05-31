@@ -109,7 +109,11 @@ def calculate_backend(name_from_env, backends=None):
                 % (name_from_env, _default_backends.keys()))
         return backends[name_from_env]()
     for maker in backends.values():
-        return maker()
+        # noinspection PyBroadException
+        try:
+            return maker()
+        except Exception:
+            pass
     raise RuntimeError('No backend could be created.')
 
 

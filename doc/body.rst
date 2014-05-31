@@ -146,6 +146,7 @@ References
 - **goless** on GitHub: https://github.com/rgalanakis/goless
 - **goless** on Read the Docs: http://goless.readthedocs.org/
 - **goless** on Travis-CI: https://travis-ci.org/rgalanakis/goless
+- **goless** on Coveralls: https://coveralls.io/r/rgalanakis/goless
 - The Go Programming Language: http://www.golang.org
 - Stackless Python: http://www.stackless.com
 - gevent: http://gevent.org/
@@ -176,6 +177,14 @@ Special thanks:
 
 - Kristján Valur Jónsson <sweskman@gmail.com>
 - Andrew Francis <af.stackless@gmail.com>
+
+.. _a-misc:
+
+Miscellany
+==========
+
+Coverage is wrong. It should be higher.
+The coverage module does not work properly with gevent and stackless.
 
 Indices and tables
 ==================

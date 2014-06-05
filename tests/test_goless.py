@@ -27,6 +27,12 @@ class GoTests(BaseTests):
         be.yield_()
         self.assertEqual(items, [1])
 
+    def test_starts_with_params(self):
+        called = mock.Mock()
+        goless.go(called, 10, a=1)
+        be.yield_()
+        called.assert_called_once_with(10, a=1)
+
     def test_exc(self):
         def raiseit():
             raise RuntimeError('ha!')

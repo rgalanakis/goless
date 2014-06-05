@@ -29,17 +29,20 @@ def on_panic(etype, value, tb):
     _be.propogate_exc(SystemExit, 1)
 
 
-def go(func):
+def go(func, *args, **kwargs):
     """
     Run a function in a new tasklet, like a goroutine.
     If the goroutine raises an unhandled exception (*panics*),
     the :func:`goless.on_panic` will be called,
     which by default logs the error and exits the process.
+
+    :param args: Positional arguments to ``func``.
+    :param kwargs: Keyword arguments to ``func``.
     """
     def safe_wrapped(f):
         # noinspection PyBroadException
         try:
-            f()
+            f(*args, **kwargs)
         except:
             on_panic(*sys.exc_info())
     _be.start(safe_wrapped, func)

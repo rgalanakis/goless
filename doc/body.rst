@@ -117,9 +117,14 @@ If you find a better pattern, create an issue on GitHub.
 Examples
 ========
 
-There are many examples from http://gobyexample.com implemented
-via ``goless``. See the ``tests/test_examples.py`` file.
-If you have an idiomatic Go example you'd like converted,
+The ``examples/`` folder contains a number of examples.
+
+In addtion,
+there are many examples from http://gobyexample.com implemented
+via ``goless`` in the ``tests/test_examples.py`` file.
+
+If there is an example you'd like to see,
+or an idiomatic Go example you'd like converted,
 please see :ref:`a-contrib` below.
 
 .. _a-backends:

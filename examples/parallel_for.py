@@ -1,9 +1,14 @@
 """
 This file demonstrates a parallel for loop using goless.
+The parallel for pattern is very simple,
+so I chose a simple example (negating an integer),
+rather than something more realistic.
+
 The example uses shared memory and a 'semaphor' channel.
 Shared memory is normally a no-no,
 but is useful here so we don't need the overhead of using
 extra channels.
+
 See http://www.golangpatterns.info/concurrency/parallel-for-loop
 for more information.
 """

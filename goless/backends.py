@@ -86,7 +86,7 @@ def _make_gevent():
             return greenlet
 
         def run(self, func, *args, **kwargs):
-            greenlet = gevent.spawn(func, *args, **kwargs)
+            greenlet = self.start(func, *args, **kwargs)
             gevent.sleep()
             return greenlet
 

@@ -20,6 +20,7 @@ import os
 PYPY = os.path.expanduser('~/venvs/gopypy/bin/python')
 SLP = os.path.expanduser('~/dev/venvs/go27slp/bin/python')
 RST = os.path.join('doc', 'benchtable.rst')
+COLUMN_WIDTHS = 8, 9, 14, 7
 
 BenchmarkResult = collections.namedtuple(
     'BenchResult', ['platform', 'backend', 'benchmark', 'time'])
@@ -68,21 +69,21 @@ def insert_seperator_results(results):
     """Given a sequence of BenchmarkResults,
     return a new sequence where a "seperator" BenchmarkResult has been placed
     between differing benchmarks to provide a visual difference."""
+    sepbench = BenchmarkResult(*['~' * w for w in COLUMN_WIDTHS])
     last_bm = None
     for r in results:
         if last_bm is None:
             last_bm = r.benchmark
         elif last_bm != r.benchmark:
-            yield BenchmarkResult('-', '-', '-', '-')
+            yield sepbench
             last_bm = r.benchmark
         yield r
 
 
 def main():
-    column_widths = 8, 9, 14, 7
     results = insert_seperator_results(collect_results())
     seperator_line = '    {} {} {} {}'.format(
-        *['=' * w for w in column_widths])
+        *['=' * w for w in COLUMN_WIDTHS])
     with open(RST, 'w') as f:
         w = lambda s: print(s, file=f)
         w('.. table:: Current goless Benchmarks')
@@ -93,7 +94,7 @@ def main():
         for br in results:
             f.write('    ')
             f.write(' '.join(
-                br[i].ljust(column_widths[i]) for i in range(len(br))))
+                br[i].ljust(COLUMN_WIDTHS[i]) for i in range(len(br))))
             f.write('\n')
         w(seperator_line)
 

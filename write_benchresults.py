@@ -58,7 +58,8 @@ def collect_results():
             except subprocess.CalledProcessError:
                 sys.stderr.write(
                     'Failed to benchmark: {} {}\n'.format(exe, be))
-    results.sort(key=lambda br: (br.benchmark, br.time))
+    results.sort(
+        key=lambda br: (br.benchmark, br.time, br.platform, br.backend))
     return results
 
 

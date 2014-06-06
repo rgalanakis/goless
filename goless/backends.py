@@ -1,5 +1,6 @@
-import os
 import platform
+
+import os
 
 
 class Backend(object):
@@ -78,7 +79,7 @@ def _make_gevent():
 
     class GeventBackend(Backend):
         def shortname(self):
-            return 'gevent'
+            return 'gevent'  # pragma: no cover
 
         def start(self, func, *args, **kwargs):
             greenlet = gevent.spawn(func, *args, **kwargs)

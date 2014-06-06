@@ -1,6 +1,8 @@
 import mock
+
 from . import BaseTests
 from goless import backends
+
 
 test_backends = dict(
     stackless=lambda: 'be_S',
@@ -37,3 +39,9 @@ class CalcBackendTests(BaseTests):
 
         with self.assertRaises(RuntimeError):
             self.calc('', {'a': raiseit})
+
+    def test_default_shortname(self):
+        class BE(backends.Backend):
+            pass
+
+        self.assertEqual(BE().shortname(), 'BE')

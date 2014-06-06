@@ -157,6 +157,21 @@ New versions of ``gevent``
 (not yet on PyPI, but in the surfly/gevent GitHub repository)
 work great with newer versions of PyPy.
 
+.. _a-benchmarks:
+
+Benchmarks
+==========
+
+You can run benchmarks using the current Python interpreter and configured
+backend by running the following from the ``goless`` project directory::
+
+    python -m benchmark
+
+Developers may run benchmarks locally and report them into the following table.
+They are useful for relative comparisons only:
+
+.. include:: benchtable.rst
+
 .. _a-references:
 
 References

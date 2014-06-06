@@ -55,17 +55,32 @@ def collect_results():
         for be in 'gevent', 'stackless':
             try:
                 results.extend(benchmark_process_and_backend(exe, be))
-            except subprocess.CalledProcessError:
+            except subprocess.CalledProcessError as ex:
                 sys.stderr.write(
                     'Failed to benchmark: {} {}\n'.format(exe, be))
+                sys.stderr.write(ex.output)
     results.sort(
         key=lambda br: (br.benchmark, br.time, br.platform, br.backend))
     return results
 
 
+def insert_seperator_results(results):
+    """Given a sequence of BenchmarkResults,
+    return a new sequence where a "seperator" BenchmarkResult has been placed
+    between differing benchmarks to provide a visual difference."""
+    last_bm = None
+    for r in results:
+        if last_bm is None:
+            last_bm = r.benchmark
+        elif last_bm != r.benchmark:
+            yield BenchmarkResult('-', '-', '-', '-')
+            last_bm = r.benchmark
+        yield r
+
+
 def main():
     column_widths = 8, 9, 14, 7
-    results = collect_results()
+    results = insert_seperator_results(collect_results())
     seperator_line = '    {} {} {} {}'.format(
         *['=' * w for w in column_widths])
     with open(RST, 'w') as f:

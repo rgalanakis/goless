@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import platform
 import sys
 import time
 
@@ -8,16 +9,10 @@ from goless import backends, chan, go, selecting
 
 QUEUE_LEN = 10000
 CHANSIZE_AND_NAMES = (
-    (0, 'Sync'),
-    (-1, 'Async'),
-    (1000, 'Buffered(1000)')
+    (0, 'chan_sync'),
+    (-1, 'chan_async'),
+    (1000, 'chan_buff')
 )
-
-FILE = sys.stdout
-
-
-def report(s, *args):
-    print(s % args, file=FILE)
 
 
 def bench_channel(chan_size):
@@ -39,10 +34,9 @@ def bench_channel(chan_size):
 
 
 def bench_channels():
-    report('  Channels:')
     for size, name in CHANSIZE_AND_NAMES:
         took = bench_channel(size)
-        report('    %s: %ss', name, took)
+        write_result(name, took)
 
 
 def bench_select(use_default):
@@ -70,19 +64,43 @@ def bench_select(use_default):
 
 
 def bench_selects():
-    report('  Select:')
     took_nodefault = bench_select(False)
-    report('    No default: %ss', took_nodefault)
+    write_result('select', took_nodefault)
     took_withdefault = bench_select(True)
-    report('    With default: %ss', took_withdefault)
+    write_result('select_default', took_withdefault)
+
+
+WRITE_ENABLED = True
+
+
+def write_result(benchname, elapsed):
+    if not WRITE_ENABLED:
+        return
+    w = sys.stdout.write
+    w(platform.python_implementation())
+    w(' ')
+    w(backends.current.shortname())
+    w(' ')
+    w(benchname)
+    w(' ')
+    w(('%.5f' % elapsed))
+    w('\n')
+
+
+def prime():
+    count = 1
+    if platform.python_implementation() == 'PyPy':
+        count = 10
+    global WRITE_ENABLED
+    WRITE_ENABLED = False
+    for _ in xrange(count):
+        bench_channels()
+        bench_selects()
+    WRITE_ENABLED = True
 
 
 def main():
-    global FILE
-    if len(sys.argv) > 1:
-        FILE = open(sys.argv[1], 'w')
-    report('Benchmarking with backend %s:',
-           backends.current.__class__.__name__)
+    prime()
     bench_channels()
     bench_selects()
 

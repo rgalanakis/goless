@@ -138,6 +138,25 @@ preferring ``stackless`` first.
 If neither ``gevent`` or ``stackless`` are available,
 a ``RuntimeError`` is raised on ``goless`` import.
 
+.. _a-pypy:
+
+goless and PyPy
+===============
+
+``goless`` should work under PyPy with
+both ``stackless`` and ``gevent`` backends.
+
+PyPy includes a ``stackless.py`` module in its standard library,
+which can be used to power ``goless``.
+This appears to work properly, but fails the ``goless`` test suite.
+We are not sure why yet, as ``stackless.py`` does not have a real maintainer
+and the bug is difficult to track down.
+However, the examples and common usages seem to all work fine.
+
+New versions of ``gevent``
+(not yet on PyPI, but in the surfly/gevent GitHub repository)
+work great with newer versions of PyPy.
+
 .. _a-references:
 
 References

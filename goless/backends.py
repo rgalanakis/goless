@@ -3,6 +3,10 @@ import platform
 
 
 class Backend(object):
+
+    def shortname(self):
+        return type(self).__name__
+
     def start(self, func, *args, **kwargs):
         """Starts a tasklet/greenlet."""
         raise NotImplementedError()
@@ -35,6 +39,9 @@ def _make_stackless():  # pragma: no cover
     import stackless
 
     class StacklessBackend(Backend):
+        def shortname(self):
+            return 'stackless'
+
         def start(self, func, *args, **kwargs):
             return stackless.tasklet(func)(*args, **kwargs)
 
@@ -70,6 +77,9 @@ def _make_gevent():
             return self.get()
 
     class GeventBackend(Backend):
+        def shortname(self):
+            return 'gevent'
+
         def start(self, func, *args, **kwargs):
             greenlet = gevent.spawn(func, *args, **kwargs)
             return greenlet

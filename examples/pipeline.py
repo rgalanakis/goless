@@ -26,8 +26,9 @@ def pipeline():
     results = goless.chan()
 
     def scanner():
-        for f in os.listdir('.'):
-            files.send(f)
+        for d, dn, f in os.walk('.'):
+            for fn in f:
+                files.send(os.path.join(d,fn))
         files.close()
 
     def hasher():

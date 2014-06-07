@@ -17,19 +17,26 @@ import goless
 def main():
     done = goless.chan()
     msgs = goless.chan()
+    out  = goless.chan()
 
     def produce():
         for i in xrange(10):
             msgs.send(i)
         done.send()
 
-    def consume():
+    def consume(name):
         for msg in msgs:
-            sys.stdout.write('%s ' % msg)
+            out.send('%s:%s ' % (name,msg))
+
+    def logger():
+        for msg in out:
+            sys.stdout.write(msg)
         sys.stdout.write('\n')
 
     goless.go(produce)
-    goless.go(consume)
+    goless.go(consume, "one")
+    goless.go(consume, "two")
+    goless.go(logger)
     done.recv()
 
 

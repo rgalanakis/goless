@@ -22,8 +22,8 @@ class Backend(object):
         """Runs the given tasklet/greenlet immediately."""
         raise NotImplementedError()
 
-    def propogate_exc(self, errtype, *args):
-        """Propogates an exception (created via ``errtype(*args)``)
+    def propagate_exc(self, errtype, *args):
+        """Propagates an exception (created via ``errtype(*args)``)
         so the program hears it and it doesn't die lonely in a tasklet."""
         raise NotImplementedError()
 
@@ -51,7 +51,7 @@ def _make_stackless():  # pragma: no cover
         def resume(self, tasklet):
             tasklet.run()
 
-        def propogate_exc(self, errtype, *args):
+        def propagate_exc(self, errtype, *args):
             stackless.getmain().throw(errtype, *args)
 
     return StacklessBackend()
@@ -87,7 +87,7 @@ def _make_gevent():
         def resume(self, tasklet):
             gevent.sleep()
 
-        def propogate_exc(self, errtype, *args):
+        def propagate_exc(self, errtype, *args):
             raise errtype
 
     return GeventBackend()

@@ -12,8 +12,6 @@ import sys
 import traceback
 
 from .backends import current as _be
-from .channels import chan, ChannelClosed
-from .selecting import dcase, rcase, scase, select
 
 
 version_info = 0, 0, 1
@@ -26,7 +24,7 @@ def on_panic(etype, value, tb):
     By default, logs and exits the process.
     """
     logging.critical(traceback.format_exception(etype, value, tb))
-    _be.propogate_exc(SystemExit, 1)
+    _be.propagate_exc(SystemExit, 1)
 
 
 def go(func, *args, **kwargs):

@@ -1,7 +1,13 @@
+import platform
+
 import os
 
 
 class Backend(object):
+
+    def shortname(self):
+        return type(self).__name__
+
     def start(self, func, *args, **kwargs):
         """Starts a tasklet/greenlet."""
         raise NotImplementedError()
@@ -34,6 +40,9 @@ def _make_stackless():  # pragma: no cover
     import stackless
 
     class StacklessBackend(Backend):
+        def shortname(self):
+            return 'stackless'
+
         def start(self, func, *args, **kwargs):
             return stackless.tasklet(func)(*args, **kwargs)
 
@@ -69,12 +78,15 @@ def _make_gevent():
             return self.get()
 
     class GeventBackend(Backend):
+        def shortname(self):
+            return 'gevent'  # pragma: no cover
+
         def start(self, func, *args, **kwargs):
             greenlet = gevent.spawn(func, *args, **kwargs)
             return greenlet
 
         def run(self, func, *args, **kwargs):
-            greenlet = gevent.spawn(func, *args, **kwargs)
+            greenlet = self.start(func, *args, **kwargs)
             gevent.sleep()
             return greenlet
 
@@ -98,8 +110,31 @@ _default_backends = {
     'gevent': _make_gevent
 }
 
+is_pypy = platform.python_implementation() == 'PyPy'
+
+
+def _calc_default(backends):
+    if is_pypy and 'gevent' in backends:
+        return backends['gevent']()
+    if 'stackless' in backends:
+        return backends['stackless']()
+    raise SystemError('Swallow this, please.')
+
 
 def calculate_backend(name_from_env, backends=None):
+    """
+    Calculates which backend to use with the following algorithm:
+
+    - Try to read the GOLESS_BACKEND environment variable.
+      Usually 'gevent' or 'stackless'.
+      If a value is set but no backend is available or it fails to be created,
+      this function will error.
+    - Determine the default backend (gevent for PyPy, stackless for Python).
+      If no default can be determined or created, continue.
+    - Try to create all the runtimes and choose the first one to create
+      successfully.
+    - Error if not runtime can be created.
+    """
     if backends is None:
         backends = _default_backends
     if name_from_env:
@@ -108,6 +143,10 @@ def calculate_backend(name_from_env, backends=None):
                 'Invalid backend %r specified. Valid backends are: %s'
                 % (name_from_env, _default_backends.keys()))
         return backends[name_from_env]()
+    try:
+        return _calc_default(backends)
+    except SystemError:
+        pass
     for maker in backends.values():
         # noinspection PyBroadException
         try:

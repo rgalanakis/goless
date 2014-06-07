@@ -1,35 +1,47 @@
+import mock
+
 from . import BaseTests
 from goless import backends
 
+
 test_backends = dict(
-    a=lambda: 'be_A',
-    b=lambda: 'be_B',
+    stackless=lambda: 'be_S',
+    gevent=lambda: 'be_G',
 )
 
 
 class CalcBackendTests(BaseTests):
-    def calc(self, name, testbackends=test_backends):
-        return backends.calculate_backend(name, testbackends)
+    def calc(self, name, testbackends=test_backends, ispypy=False):
+        with mock.patch('goless.backends.is_pypy', ispypy):
+            return backends.calculate_backend(name, testbackends)
 
-    def test_valid_envvar_name(self):
-        be = self.calc('a')
-        self.assertEqual(be, 'be_A')
+    def test_envvar_chooses_backend(self):
+        be = self.calc('gevent')
+        self.assertEqual(be, 'be_G')
 
-    def test_invalid_envvar_name(self):
+    def test_invalid_envvar_raises(self):
         with self.assertRaises(RuntimeError):
             self.calc('invalid')
 
-    def test_default(self):
-        be = self.calc('')
-        self.assertIn(be, [v() for v in test_backends.values()])
+    def test_stackless_is_cpython_default(self):
+        self.assertEqual(self.calc(''), 'be_S')
 
-    def test_no_backends(self):
+    def test_gevent_is_pypy_default(self):
+        self.assertEqual(self.calc('', ispypy=True), 'be_G')
+
+    def test_no_backends_raises(self):
         with self.assertRaises(RuntimeError):
             self.calc('', {})
 
-    def test_invalid_backends(self):
+    def test_no_valid_backends_raises(self):
         def raiseit():
             raise KeyError()
 
         with self.assertRaises(RuntimeError):
             self.calc('', {'a': raiseit})
+
+    def test_default_shortname(self):
+        class BE(backends.Backend):
+            pass
+
+        self.assertEqual(BE().shortname(), 'BE')

@@ -23,13 +23,14 @@ def main():
             msgs.send(i)
         done.send()
 
-    def consume():
+    def consume(name):
         for msg in msgs:
-            sys.stdout.write('%s ' % msg)
+            sys.stdout.write('%s:%s ' % (name,msg))
         sys.stdout.write('\n')
 
     goless.go(produce)
-    goless.go(consume)
+    goless.go(consume, "one")
+    goless.go(consume, "two")
     done.recv()
 
 

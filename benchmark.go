@@ -1,6 +1,7 @@
 package main
 
 import "fmt"
+import "reflect"
 import "time"
 
 const queueLen int = 10000
@@ -32,10 +33,49 @@ func benchChannels() {
 	writeResult("chan_buff", tookBuff)
 }
 
+func benchSelect(useDefault bool) timing {
+    c := make(chan int, 0)
+
+	caseCnt := 4
+	if useDefault {
+		caseCnt = 5
+	}
+	cases := make([]reflect.SelectCase, caseCnt)
+	cases[0] = reflect.SelectCase{Dir: reflect.SelectSend, Chan: reflect.ValueOf(c), Send: reflect.ValueOf(0)}
+	cases[1] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(c)}
+	cases[2] = cases[0]
+	cases[3] = cases[1]
+	if useDefault {
+		cases[4] = reflect.SelectCase{Dir: reflect.SelectDefault}
+	}
+
+    go func() {
+		for {
+			c <- 0
+			<- c
+		}
+	}()
+
+	start := time.Now()
+	for i := 0; i <= queueLen; i++ {
+		reflect.Select(cases)
+	}
+	elapsed := time.Since(start)
+	return timing(elapsed.Seconds())
+}
+
+func benchSelects() {
+	tookNoDefault := benchSelect(false)
+	writeResult("select", tookNoDefault)
+	tookWithDefault := benchSelect(true)
+	writeResult("select_default", tookWithDefault)
+}
+
 func writeResult(benchName string, elapsed timing) {
 	fmt.Printf("go go %s %.5f\n", benchName, elapsed)
 }
 
 func main() {
 	benchChannels()
+	benchSelects()
 }

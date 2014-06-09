@@ -3,28 +3,33 @@
     ======== ========= ============== =======
     Platform Backend   Benchmark      Time
     ======== ========= ============== =======
-    PyPy     stackless chan_async     0.08400
-    CPython  stackless chan_async     0.18000
-    PyPy     gevent    chan_async     0.46800
-    CPython  gevent    chan_async     1.32000
+    go       gc        chan_async     0.00253
+    PyPy     stackless chan_async     0.06400
+    CPython  stackless chan_async     0.10000
+    PyPy     gevent    chan_async     0.35600
+    CPython  gevent    chan_async     1.09000
     ~~~~~~~~ ~~~~~~~~~ ~~~~~~~~~~~~~~ ~~~~~~~
-    PyPy     stackless chan_buff      0.08000
-    CPython  stackless chan_buff      0.18000
-    PyPy     gevent    chan_buff      1.02000
-    CPython  gevent    chan_buff      1.26000
+    go       gc        chan_buff      0.00228
+    PyPy     stackless chan_buff      0.06400
+    CPython  stackless chan_buff      0.09000
+    PyPy     gevent    chan_buff      0.35200
+    CPython  gevent    chan_buff      1.11000
     ~~~~~~~~ ~~~~~~~~~ ~~~~~~~~~~~~~~ ~~~~~~~
-    PyPy     stackless chan_sync      0.04400
-    CPython  stackless chan_sync      0.18000
-    PyPy     gevent    chan_sync      0.44800
-    CPython  gevent    chan_sync      1.26000
+    go       gc        chan_sync      0.00507
+    PyPy     stackless chan_sync      0.06000
+    CPython  stackless chan_sync      0.10000
+    PyPy     gevent    chan_sync      0.35200
+    CPython  gevent    chan_sync      1.09000
     ~~~~~~~~ ~~~~~~~~~ ~~~~~~~~~~~~~~ ~~~~~~~
-    PyPy     stackless select         0.06000
-    CPython  stackless select         0.38000
-    PyPy     gevent    select         0.60400
-    CPython  gevent    select         1.94000
+    go       gc        select         0.03119
+    PyPy     stackless select         0.04800
+    CPython  stackless select         0.29000
+    PyPy     gevent    select         0.94800
+    CPython  gevent    select         1.47000
     ~~~~~~~~ ~~~~~~~~~ ~~~~~~~~~~~~~~ ~~~~~~~
-    PyPy     stackless select_default 0.00800
-    PyPy     gevent    select_default 0.01200
-    CPython  stackless select_default 0.19000
-    CPython  gevent    select_default 0.25000
+    PyPy     stackless select_default 0.00400
+    PyPy     gevent    select_default 0.00800
+    go       gc        select_default 0.02667
+    CPython  stackless select_default 0.15000
+    CPython  gevent    select_default 0.22000
     ======== ========= ============== =======

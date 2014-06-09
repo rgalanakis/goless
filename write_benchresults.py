@@ -91,22 +91,30 @@ def insert_seperator_results(results):
 
 
 def main():
+    if len(sys.argv) == 2 and sys.argv[1] == '-':
+        f = sys.stdout
+    else:
+        f = open(RST, 'w')
+
     results = insert_seperator_results(collect_results())
     seperator_line = '    {} {} {} {}'.format(
         *['=' * w for w in COLUMN_WIDTHS])
-    with open(RST, 'w') as f:
-        w = lambda s: print(s, file=f)
-        w('.. table:: Current goless Benchmarks')
-        w('')
-        w(seperator_line)
-        w('    Platform Backend   Benchmark      Time')
-        w(seperator_line)
-        for br in results:
-            f.write('    ')
-            f.write(' '.join(
-                br[i].ljust(COLUMN_WIDTHS[i]) for i in range(len(br))))
-            f.write('\n')
-        w(seperator_line)
+
+    def w(s):
+        f.write(s)
+        f.write('\n')
+        f.flush()
+    w('.. table:: Current goless Benchmarks')
+    w('')
+    w(seperator_line)
+    w('    Platform Backend   Benchmark      Time')
+    w(seperator_line)
+    for br in results:
+        f.write('    ')
+        f.write(' '.join(
+            br[i].ljust(COLUMN_WIDTHS[i]) for i in range(len(br))))
+        f.write('\n')
+    w(seperator_line)
 
 
 if __name__ == '__main__':

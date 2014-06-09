@@ -12,8 +12,8 @@ goless
 ======
 
 The **goless** library provides **Go** programming language
-semantics built on top of **Stackless Python** or **gevent**.
+semantics built on top of **stackless** or **gevent**.
+It works with PyPy, CPython, and Stackless Python interpreters.
 
-You can see more examples on its documentation site at
-https://goless.readthedocs.org/
-
+**goless** has extensive documentation and examples.
+See <https://goless.readthedocs.org/> for more information.

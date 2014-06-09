@@ -12,7 +12,9 @@ import sys
 import traceback
 
 from .backends import current as _be
+# noinspection PyUnresolvedReferences
 from .channels import chan, ChannelClosed
+# noinspection PyUnresolvedReferences
 from .selecting import dcase, rcase, scase, select
 
 
@@ -26,7 +28,7 @@ def on_panic(etype, value, tb):
     By default, logs and exits the process.
     """
     logging.critical(traceback.format_exception(etype, value, tb))
-    _be.propogate_exc(SystemExit, 1)
+    _be.propagate_exc(SystemExit, 1)
 
 
 def go(func, *args, **kwargs):

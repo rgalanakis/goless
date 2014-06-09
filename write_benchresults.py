@@ -41,7 +41,10 @@ def get_benchproc_results(clargs, **kwargs):
         sys.stderr.write('Failed to benchmark: %s\n' % ' '.join(clargs))
         sys.stderr.write(stderr)
         return []
-    return stdout_to_results(stdout)
+    results = stdout_to_results(stdout)
+    for br in results:
+        print(justify_benchresult(br))
+    return results
 
 
 def benchmark_process_and_backend(exe, backend):
@@ -49,15 +52,13 @@ def benchmark_process_and_backend(exe, backend):
     env = dict(os.environ)
     env['GOLESS_BACKEND'] = backend
     args = [exe, '-m', 'benchmark']
-    results = get_benchproc_results(args, env=env)
-    return results
+    return get_benchproc_results(args, env=env)
 
 
 def benchmark_go():
     """Writes the go benchmarks, if go is installed."""
     subprocess.check_call(['go', 'version'], stdout=subprocess.PIPE)
-    results = get_benchproc_results(['go', 'run', 'benchmark.go'])
-    return results
+    return get_benchproc_results(['go', 'run', 'benchmark.go'])
 
 
 def collect_results():
@@ -65,7 +66,7 @@ def collect_results():
     BenchmarkResults, sorted by benchmark and time taken.
     """
     results = []
-    for exe in PYPY, SLP:
+    for exe in SLP, PYPY:
         for be in 'gevent', 'stackless':
             results.extend(benchmark_process_and_backend(exe, be))
     results.extend(benchmark_go())
@@ -90,31 +91,34 @@ def insert_seperator_results(results):
         yield r
 
 
+def justify_benchresult(br):
+    return ' '.join(br[i].ljust(COLUMN_WIDTHS[i]) for i in range(len(br)))
+
+
 def main():
-    if len(sys.argv) == 2 and sys.argv[1] == '-':
-        f = sys.stdout
-    else:
-        f = open(RST, 'w')
+    print('Running benchmarks.')
 
     results = insert_seperator_results(collect_results())
     seperator_line = '    {} {} {} {}'.format(
         *['=' * w for w in COLUMN_WIDTHS])
 
-    def w(s):
-        f.write(s)
-        f.write('\n')
-        f.flush()
-    w('.. table:: Current goless Benchmarks')
-    w('')
-    w(seperator_line)
-    w('    Platform Backend   Benchmark      Time')
-    w(seperator_line)
-    for br in results:
-        f.write('    ')
-        f.write(' '.join(
-            br[i].ljust(COLUMN_WIDTHS[i]) for i in range(len(br))))
-        f.write('\n')
-    w(seperator_line)
+    with open(RST, 'w') as f:
+        def w(s):
+            f.write(s)
+            f.write('\n')
+            f.flush()
+
+        w('.. table:: Current goless Benchmarks')
+        w('')
+        w(seperator_line)
+        w('    Platform Backend   Benchmark      Time')
+        w(seperator_line)
+        for br in results:
+            f.write('    ')
+            f.write(justify_benchresult(br))
+            f.write('\n')
+        w(seperator_line)
+    print('Benchmarks finished. Report written to %s' % RST)
 
 
 if __name__ == '__main__':

@@ -1,3 +1,19 @@
+/*
+	Golang implementation of this project's benchmark.py file.
+	It should be a pretty direct mirror.
+
+	The only questionable decision is the use of reflect.SelectCase,
+	rather than Go's select statement.
+	goless' select function is based on reflect.SelectCase,
+	so this is "idiotmatic goless" (ugh),
+	but Go programs rarely use reflect.SelectCase and instead use its
+	select function.
+
+	Using the select statement would probably speed things up.
+	I'm not sure what the right thing to do is,
+	so I chose the easier thing.
+*/
+
 package main
 
 import (

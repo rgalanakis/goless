@@ -33,35 +33,45 @@ def stdout_to_results(s):
     return [BenchmarkResult(*r.split()) for r in results]
 
 
+def get_benchproc_results(clargs, **kwargs):
+    p = subprocess.Popen(
+        clargs, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
+    stdout, stderr = p.communicate()
+    if p.returncode != 0:
+        sys.stderr.write('Failed to benchmark: %s\n' % ' '.join(clargs))
+        sys.stderr.write(stderr)
+        return []
+    return stdout_to_results(stdout)
+
+
 def benchmark_process_and_backend(exe, backend):
     """Returns BenchmarkResults for a given executable and backend."""
     env = dict(os.environ)
     env['GOLESS_BACKEND'] = backend
     args = [exe, '-m', 'benchmark']
-    p = subprocess.Popen(
-        args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
-    stdout, stderr = p.communicate()
-    if p.returncode != 0:
-        raise subprocess.CalledProcessError(p.returncode, args, stderr)
-    return stdout_to_results(stdout)
+    results = get_benchproc_results(args, env=env)
+    return results
+
+
+def benchmark_go():
+    """Writes the go benchmarks, if go is installed."""
+    subprocess.check_call(['go', 'version'], stdout=subprocess.PIPE)
+    results = get_benchproc_results(['go', 'run', 'benchmark.go'])
+    return results
 
 
 def collect_results():
     """Runs all platforms/backends/benchmarks and returns as list of
     BenchmarkResults, sorted by benchmark and time taken.
     """
-    # call('stackless')
     results = []
     for exe in PYPY, SLP:
         for be in 'gevent', 'stackless':
-            try:
-                results.extend(benchmark_process_and_backend(exe, be))
-            except subprocess.CalledProcessError as ex:
-                sys.stderr.write(
-                    'Failed to benchmark: {} {}\n'.format(exe, be))
-                sys.stderr.write(ex.output)
+            results.extend(benchmark_process_and_backend(exe, be))
+    results.extend(benchmark_go())
+
     results.sort(
-        key=lambda br: (br.benchmark, br.time, br.platform, br.backend))
+        key=lambda br: (br.benchmark, float(br.time), br.platform, br.backend))
     return results
 
 

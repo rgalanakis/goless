@@ -161,3 +161,28 @@ class BufferedChannelTests(BaseTests, ChanTestMixin):
         self.assertEqual(markers, [1])
         chan.send(2)
         self.assertEqual(markers, [1, 2])
+
+
+class BackendChannelSenderReceiverPriorityTest(BaseTests):
+    """
+    Tests if the current backend channel implementation has the correct
+    sender/receiver priority (aka preference in stackless).
+    Current implementations of goless channels depend on receiver having the execution priotity!
+    """
+
+    def test_be_has_correct_sender_receiver_priority(self):
+        c = be.channel()
+        r = []
+        def do_send():
+            r.append("s1")
+            c.send(None)
+            r.append("s2")
+        def do_receive():
+            r.append("r1")
+            c.receive()
+            r.append("r2")
+
+        be.run(do_receive)
+        be.run(do_send)
+        be.yield_()
+        self.assertEqual(["r1", "s1", "r2", "s2"], r)

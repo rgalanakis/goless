@@ -1,8 +1,11 @@
 package main
 
-import "fmt"
-import "reflect"
-import "time"
+import (
+	"fmt"
+	"reflect"
+	"runtime"
+	"time"
+)
 
 const queueLen int = 10000
 type timing float64
@@ -72,7 +75,7 @@ func benchSelects() {
 }
 
 func writeResult(benchName string, elapsed timing) {
-	fmt.Printf("go go %s %.5f\n", benchName, elapsed)
+	fmt.Printf("go %s %s %.5f\n", runtime.Compiler, benchName, elapsed)
 }
 
 func main() {

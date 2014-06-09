@@ -170,7 +170,7 @@ Benchmarks
 You can run benchmarks using the current Python interpreter and configured
 backend by running the following from the ``goless`` project directory::
 
-    python -m benchmark
+    $ python -m benchmark
 
 Developers may run benchmarks locally and report them into the following table.
 The **Go** versions of the benchmarks are also run.
@@ -180,11 +180,15 @@ The numbers are useful for relative comparisons only:
 
 To regenerate this table, run::
 
-    python write_benchmarks.py
+    $ python write_benchmarks.py
 
 To print the table to stdout, run::
 
-    python write_benchmarks.py stdout
+    $ python write_benchresults.py -
+
+Assuming you have **Go** installed, you can run the benchmarks with::
+
+    $ go run benchmark.go
 
 .. _a-gil:
 

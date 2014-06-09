@@ -183,8 +183,8 @@ goless and the GIL
 ==================
 
 ``goless`` does not address CPython's **Global Interpreter Lock** (**GIL**) at all.
-``goless`` does not magically provide any parellelization.
-It provides Go-like semantics, but not its performace.
+``goless`` does not magically provide any parallelization.
+It provides Go-like semantics, but not its performance.
 Perhaps this will change in the future if the GIL is removed.
 Another option is PyPy's STM branch,
 which ``goless`` will (probably) benefit heartily.

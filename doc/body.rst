@@ -173,9 +173,18 @@ backend by running the following from the ``goless`` project directory::
     python -m benchmark
 
 Developers may run benchmarks locally and report them into the following table.
-They are useful for relative comparisons only:
+The **Go** versions of the benchmarks are also run.
+The numbers are useful for relative comparisons only:
 
 .. include:: benchtable.rst
+
+To regenerate this table, run::
+
+    python write_benchmarks.py
+
+To print the table to stdout, run::
+
+    python write_benchmarks.py stdout
 
 .. _a-gil:
 

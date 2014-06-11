@@ -165,7 +165,7 @@ To regenerate this table, run::
 
     $ python write_benchmarks.py
 
-To print the table to stdout, run::
+To print the table to stdout, run (notice the trailing ``-`` char)::
 
     $ python write_benchresults.py -
 

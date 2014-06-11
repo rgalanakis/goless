@@ -124,7 +124,6 @@ def main():
             f.write('\n')
             f.write(make_sepline())
             f.write('\n')
-        w(make_sepline())
     print('Benchmarks finished. Report written to %s' % RST)
 
 

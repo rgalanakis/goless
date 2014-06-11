@@ -1,35 +1,64 @@
 .. table:: Current goless Benchmarks
 
-    ======== ========= ============== =======
-    Platform Backend   Benchmark      Time
-    ======== ========= ============== =======
-    go       gc        chan_async     0.00253
-    PyPy     stackless chan_async     0.06400
-    CPython  stackless chan_async     0.10000
-    PyPy     gevent    chan_async     0.35600
-    CPython  gevent    chan_async     1.09000
-    ~~~~~~~~ ~~~~~~~~~ ~~~~~~~~~~~~~~ ~~~~~~~
-    go       gc        chan_buff      0.00228
-    PyPy     stackless chan_buff      0.06400
-    CPython  stackless chan_buff      0.09000
-    PyPy     gevent    chan_buff      0.35200
-    CPython  gevent    chan_buff      1.11000
-    ~~~~~~~~ ~~~~~~~~~ ~~~~~~~~~~~~~~ ~~~~~~~
-    go       gc        chan_sync      0.00507
-    PyPy     stackless chan_sync      0.06000
-    CPython  stackless chan_sync      0.10000
-    PyPy     gevent    chan_sync      0.35200
-    CPython  gevent    chan_sync      1.09000
-    ~~~~~~~~ ~~~~~~~~~ ~~~~~~~~~~~~~~ ~~~~~~~
-    go       gc        select         0.03119
-    PyPy     stackless select         0.04800
-    CPython  stackless select         0.29000
-    PyPy     gevent    select         0.94800
-    CPython  gevent    select         1.47000
-    ~~~~~~~~ ~~~~~~~~~ ~~~~~~~~~~~~~~ ~~~~~~~
-    PyPy     stackless select_default 0.00400
-    PyPy     gevent    select_default 0.00800
-    go       gc        select_default 0.02667
-    CPython  stackless select_default 0.15000
-    CPython  gevent    select_default 0.22000
-    ======== ========= ============== =======
+    +--------+---------+--------------+-------+
+    |Platform|Backend  |Benchmark     |Time   |
+    +========+=========+==============+=======+
+    |go      |gc       |chan_async    |0.00465|
+    +--------+---------+--------------+-------+
+    |PyPy    |stackless|chan_async    |0.02800|
+    +--------+---------+--------------+-------+
+    |CPython |stackless|chan_async    |0.14000|
+    +--------+---------+--------------+-------+
+    |PyPy    |gevent   |chan_async    |0.30800|
+    +--------+---------+--------------+-------+
+    |CPython |gevent   |chan_async    |1.06000|
+    +--------+---------+--------------+-------+
+    |        |         |              |       |
+    +--------+---------+--------------+-------+
+    |go      |gc       |chan_buff     |0.00468|
+    +--------+---------+--------------+-------+
+    |PyPy    |stackless|chan_buff     |0.03600|
+    +--------+---------+--------------+-------+
+    |CPython |stackless|chan_buff     |0.15000|
+    +--------+---------+--------------+-------+
+    |PyPy    |gevent   |chan_buff     |0.30800|
+    +--------+---------+--------------+-------+
+    |CPython |gevent   |chan_buff     |1.00000|
+    +--------+---------+--------------+-------+
+    |        |         |              |       |
+    +--------+---------+--------------+-------+
+    |go      |gc       |chan_sync     |0.01010|
+    +--------+---------+--------------+-------+
+    |PyPy    |stackless|chan_sync     |0.02800|
+    +--------+---------+--------------+-------+
+    |CPython |stackless|chan_sync     |0.15000|
+    +--------+---------+--------------+-------+
+    |PyPy    |gevent   |chan_sync     |0.30400|
+    +--------+---------+--------------+-------+
+    |CPython |gevent   |chan_sync     |1.00000|
+    +--------+---------+--------------+-------+
+    |        |         |              |       |
+    +--------+---------+--------------+-------+
+    |go      |gc       |select        |0.05788|
+    +--------+---------+--------------+-------+
+    |PyPy    |stackless|select        |0.08400|
+    +--------+---------+--------------+-------+
+    |CPython |stackless|select        |0.31000|
+    +--------+---------+--------------+-------+
+    |PyPy    |gevent   |select        |0.38800|
+    +--------+---------+--------------+-------+
+    |CPython |gevent   |select        |1.54000|
+    +--------+---------+--------------+-------+
+    |        |         |              |       |
+    +--------+---------+--------------+-------+
+    |PyPy    |gevent   |select_default|0.00800|
+    +--------+---------+--------------+-------+
+    |PyPy    |stackless|select_default|0.00800|
+    +--------+---------+--------------+-------+
+    |go      |gc       |select_default|0.03029|
+    +--------+---------+--------------+-------+
+    |CPython |stackless|select_default|0.15000|
+    +--------+---------+--------------+-------+
+    |CPython |gevent   |select_default|0.20000|
+    +--------+---------+--------------+-------+
+    +--------+---------+--------------+-------+

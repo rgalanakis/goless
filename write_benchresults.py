@@ -80,7 +80,7 @@ def insert_seperator_results(results):
     """Given a sequence of BenchmarkResults,
     return a new sequence where a "seperator" BenchmarkResult has been placed
     between differing benchmarks to provide a visual difference."""
-    sepbench = BenchmarkResult(*['~' * w for w in COLUMN_WIDTHS])
+    sepbench = BenchmarkResult(*[' ' * w for w in COLUMN_WIDTHS])
     last_bm = None
     for r in results:
         if last_bm is None:
@@ -92,15 +92,20 @@ def insert_seperator_results(results):
 
 
 def justify_benchresult(br):
-    return ' '.join(br[i].ljust(COLUMN_WIDTHS[i]) for i in range(len(br)))
+    middle = '|'.join(br[i].ljust(COLUMN_WIDTHS[i]) for i in range(len(br)))
+    return '|%s|' % middle
+
+
+def make_sepline(char='-'):
+    seperator_line = '    +{}+{}+{}+{}+'.format(
+        *[char * w for w in COLUMN_WIDTHS])
+    return seperator_line
 
 
 def main():
     print('Running benchmarks.')
 
     results = insert_seperator_results(collect_results())
-    seperator_line = '    {} {} {} {}'.format(
-        *['=' * w for w in COLUMN_WIDTHS])
 
     with open(RST, 'w') as f:
         def w(s):
@@ -110,14 +115,16 @@ def main():
 
         w('.. table:: Current goless Benchmarks')
         w('')
-        w(seperator_line)
-        w('    Platform Backend   Benchmark      Time')
-        w(seperator_line)
+        w(make_sepline())
+        w('    |Platform|Backend  |Benchmark     |Time   |')
+        w(make_sepline('='))
         for br in results:
             f.write('    ')
             f.write(justify_benchresult(br))
             f.write('\n')
-        w(seperator_line)
+            f.write(make_sepline())
+            f.write('\n')
+        w(make_sepline())
     print('Benchmarks finished. Report written to %s' % RST)
 
 

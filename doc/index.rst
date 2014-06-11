@@ -7,9 +7,9 @@ goless: Go-style Python
 - :ref:`a-select`
 - :ref:`a-exceptions`
 - :ref:`a-examples`
+- :ref:`a-benchmarks`
 - :ref:`a-backends`
 - :ref:`a-pypy`
-- :ref:`a-benchmarks`
 - :ref:`a-gil`
 - :ref:`a-references`
 - :ref:`a-contrib`
@@ -80,8 +80,8 @@ about how they actually work.
 
 .. _a-select:
 
-The ``select`` function
-=======================
+The select function
+===================
 
 Go's ``select`` statement is implemented through the :func:`goless.select` function.
 Because Python lacks anonymous blocks (*multiline lambdas*),
@@ -145,6 +145,34 @@ If there is an example you'd like to see,
 or an idiomatic Go example you'd like converted,
 please see :ref:`a-contrib` below.
 
+.. _a-benchmarks:
+
+Benchmarks
+==========
+
+You can run benchmarks using the current Python interpreter and configured
+backend by running the following from the ``goless`` project directory::
+
+    $ python -m benchmark
+
+Developers may run benchmarks locally and report them into the following table.
+The **Go** versions of the benchmarks are also run.
+The numbers are useful for relative comparisons only:
+
+.. include:: benchtable.rst
+
+To regenerate this table, run::
+
+    $ python write_benchmarks.py
+
+To print the table to stdout, run::
+
+    $ python write_benchresults.py -
+
+Assuming you have **Go** installed, you can run the benchmarks with::
+
+    $ go run benchmark.go
+
 .. _a-backends:
 
 Backends
@@ -179,34 +207,6 @@ However, the examples and common usages seem to all work fine.
 New versions of ``gevent``
 (not yet on PyPI, but in the surfly/gevent GitHub repository)
 work great with newer versions of PyPy.
-
-.. _a-benchmarks:
-
-Benchmarks
-==========
-
-You can run benchmarks using the current Python interpreter and configured
-backend by running the following from the ``goless`` project directory::
-
-    $ python -m benchmark
-
-Developers may run benchmarks locally and report them into the following table.
-The **Go** versions of the benchmarks are also run.
-The numbers are useful for relative comparisons only:
-
-.. include:: benchtable.rst
-
-To regenerate this table, run::
-
-    $ python write_benchmarks.py
-
-To print the table to stdout, run::
-
-    $ python write_benchresults.py -
-
-Assuming you have **Go** installed, you can run the benchmarks with::
-
-    $ go run benchmark.go
 
 .. _a-gil:
 

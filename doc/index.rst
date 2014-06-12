@@ -22,7 +22,7 @@ Intro
 =====
 
 The `goless library`_ provides **Go** programming language
-semantics built on top of `Stackless Python`_ or gevent_.
+semantics built on top of gevent_, `PyPy`_, or `Stackless Python`_.
 
 For an example of what **goless** can do,
 here is the Go program at https://gobyexample.com/select
@@ -232,6 +232,7 @@ References
 - The Go Programming Language: http://www.golang.org
 - Stackless Python: http://www.stackless.com
 - gevent: http://gevent.org/
+- PyPy: http://pypy.org/
 - Idiomatic Go Examples: http://gobyexample.com
 
 .. _a-contrib:
@@ -278,3 +279,4 @@ Indices and tables
 .. _goless library: https://github.com/rgalanakis/goless
 .. _Stackless Python: http://www.stackless.com/
 .. _gevent: http://www.gevent.org/
+.. _PyPy: http://pypy.org/

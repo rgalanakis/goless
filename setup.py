@@ -16,7 +16,7 @@ setup(
     url='https://github.com/rgalanakis/goless',
     packages=['goless'],
     classifiers=[
-        'Development Status :: 3 - Beta',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',

@@ -105,6 +105,34 @@ def _make_gevent():
     return GeventBackend()
 
 
+NO_VALID_BACKEND_MSG = """
+No valid backend could be created.
+Valid backends are
+gevent (for CPython, Stackless Python, or PyPy with newer version of gevent)
+and
+stackless (for Stackless Python or PyPy).
+See goless.backends.calculate_backend for more details about what backend
+is chosen under what conditions."""
+
+
+class NoValidBackend(Exception):
+    def __init__(self):
+        Exception.__init__(self, NO_VALID_BACKEND_MSG)
+
+
+class NullBackend(Backend):
+    """Backend that raises a NoValidBackend when it is accessed or called.
+    This allows goless to be imported, but not used,
+    when no backend can be found.
+    """
+
+    def __getattribute__(self, item):
+        raise NoValidBackend()
+
+    def __call__(self, *args, **kwargs):
+        raise NoValidBackend()
+
+
 _default_backends = {
     'stackless': _make_stackless,
     'gevent': _make_gevent
@@ -136,7 +164,8 @@ def calculate_backend(name_from_env, backends=None):
       If no default can be determined or created, continue.
     - Try to create all the runtimes and choose the first one to create
       successfully.
-    - Error if not runtime can be created.
+    - If no runtime can be created, return a NullBackend,
+      which will error when accessed.
     """
     if backends is None:
         backends = _default_backends
@@ -156,7 +185,7 @@ def calculate_backend(name_from_env, backends=None):
             return maker()
         except Exception:
             pass
-    raise RuntimeError('No backend could be created.')
+    return NullBackend()
 
 
 current = calculate_backend(os.getenv('GOLESS_BACKEND', ''))

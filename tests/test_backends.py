@@ -29,9 +29,8 @@ class CalcBackendTests(BaseTests):
     def test_gevent_is_pypy_default(self):
         self.assertEqual(self.calc('', ispypy=True), 'be_G')
 
-    def test_no_backends_raises(self):
-        with self.assertRaises(RuntimeError):
-            self.calc('', {})
+    def test_no_backends_uses_nullbackend(self):
+        self.assertIsInstance(self.calc('', {}), backends.NullBackend)
 
     def test_default_backend_error_uses_fallback(self):
         # Regression test for found bug.
@@ -42,15 +41,29 @@ class CalcBackendTests(BaseTests):
         testerbackends['gevent'] = raiseit
         self.assertEqual(self.calc('', testerbackends, ispypy=True), 'be_S')
 
-    def test_no_valid_backends_raises(self):
+    def test_no_valid_backends_uses_nullbackend(self):
         def raiseit():
             raise KeyError()
 
-        with self.assertRaises(RuntimeError):
-            self.calc('', {'a': raiseit})
+        self.assertIsInstance(
+            self.calc('', {'a': raiseit}), backends.NullBackend)
 
     def test_default_shortname(self):
         class BE(backends.Backend):
             pass
 
         self.assertEqual(BE().shortname(), 'BE')
+
+
+class NullBackendTests(BaseTests):
+    def test_raises_on_access(self):
+        nb = backends.NullBackend()
+        with self.assertRaises(backends.NoValidBackend):
+            nb.shortname()
+        with self.assertRaises(backends.NoValidBackend):
+            nb()
+
+    def test_novalidbackend_msg(self):
+        with self.assertRaises(backends.NoValidBackend) as ex:
+            backends.NullBackend().shortname()
+            self.assertEqual(ex.args, (backends.NO_VALID_BACKEND_MSG,))

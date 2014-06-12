@@ -9,7 +9,7 @@ goless: Go-style Python
 - :ref:`a-examples`
 - :ref:`a-benchmarks`
 - :ref:`a-backends`
-- :ref:`a-pypy`
+- :ref:`a-compat`
 - :ref:`a-gil`
 - :ref:`a-references`
 - :ref:`a-contrib`
@@ -180,33 +180,79 @@ Backends
 
 There are two backends for concurrently available in
 :mod:`goless.backends`.
-These backends should only be used by `goless`,
+Backends should only be used by ``goless``,
 and not by any client code.
 You can choose between backends by setting the environment variable
 ``GOLESS_BACKEND`` to ``"gevent"`` or ``"stackless"``.
-Otherwise, an appropriate backend will be chosen,
-preferring ``stackless`` first.
+Otherwise, an appropriate backend will be chosen.
 If neither ``gevent`` or ``stackless`` are available,
-a ``RuntimeError`` is raised on ``goless`` import.
+``goless`` will raise an error when used (but will still be importable).
+
+.. _a-compat:
+
+Compatibility with PyPy and Python 3
+====================================
+
+The good news is that you probably don't need to worry about any of this,
+and goless works almost everywhere.
+
+The bad news is, almost all abstractions are leaky,
+and there can be some nuances to compatibility.
+If you run into an issue where ``goless`` cannot create a backend,
+you may need to read the following sections.
 
 .. _a-pypy:
 
-goless and PyPy
-===============
+PyPy
+----
 
-``goless`` should work under PyPy with
-both ``stackless`` and ``gevent`` backends.
-
-PyPy includes a ``stackless.py`` module in its standard library,
-which can be used to power ``goless``.
+``goless`` works under PyPy out of the box with the stackless
+backend, because it includes a ``stackless.py`` file in its standard library.
 This appears to work properly, but fails the ``goless`` test suite.
 We are not sure why yet, as ``stackless.py`` does not have a real maintainer
 and the bug is difficult to track down.
 However, the examples and common usages seem to all work fine.
 
-New versions of ``gevent``
-(not yet on PyPI, but in the surfly/gevent GitHub repository)
-work great with newer versions of PyPy.
+Using PyPy 2.2+ and the tip of gevent's GitHub repo
+( https://github.com/surfly/gevent ),
+the gevent backend works and is fully tested.
+
+Python 2 (CPython)
+------------------
+
+Using Python 2 and the CPython interpreter,
+you can use the gevent backend for ``goless``.
+Under Python 2, you can just do::
+
+    $ pip install gevent
+    $ pip install goless
+
+Python 3 (CPython)
+------------------
+
+Newer versions of gevent include Python 3 compatibility.
+To install gevent on Python3, you also **must** install Cython.
+So you can use thew following commands to install ``goless``
+under Python3 with its gevent backend::
+
+    $ pip install cython
+    $ pip install git+https://github.com/surfly/gevent.git#gevent-egg
+    $ pip install goless
+
+This works and is tested.
+
+Python2
+-------
+
+``goless``
+
+Stackless Python
+----------------
+
+All versions of Stackless Python should work with goless.
+However, we cannot test with Stackless Python on Travis,
+so we only test with it locally.
+If you find any problems, *please* report an issue.
 
 .. _a-gil:
 

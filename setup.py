@@ -8,10 +8,7 @@ setup(
     author=__author__,
     author_email=__email__,
     description="Provides a Go-like concurrent programming style in Python.",
-    long_description="""goless provides Go-like channels and a select function
-    in Python, written on top of gevent, PyPy, or Stackless Python.
-    Using goless, you can write Go-style concurrent programs in Python.
-    """,
+    long_description=open('README.rst').read(),
     license=__license__,
     keywords='tasklet stackless go concurrent '
              'threading async gevent go golang',

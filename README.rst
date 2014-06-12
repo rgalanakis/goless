@@ -12,8 +12,11 @@ goless
 ======
 
 The **goless** library provides **Go** programming language
-semantics built on top of **gevent**, **PyPy**, or **Stackless Python**.
+semantics, such as channels, select, and goroutines,
+built on top of **gevent**, **PyPy**, or **Stackless Python**.
 It works with PyPy, CPython, and Stackless Python interpreters.
 
+Using goless, you can write Go-style concurrent programs in Python.
+
 **goless** has extensive documentation and examples.
-See <https://goless.readthedocs.org/> for more information.
+See https://goless.readthedocs.org/ for more information.

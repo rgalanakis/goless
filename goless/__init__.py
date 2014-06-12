@@ -18,13 +18,14 @@ import traceback
 from .backends import current as _be
 
 
+
 # noinspection PyUnresolvedReferences
 from .channels import chan, ChannelClosed
 # noinspection PyUnresolvedReferences
 from .selecting import dcase, rcase, scase, select
 
 
-version_info = 0, 5, 0
+version_info = 0, 5, 1
 version = '.'.join([str(v) for v in version_info])
 
 __version__ = version

@@ -114,10 +114,13 @@ is_pypy = platform.python_implementation() == 'PyPy'
 
 
 def _calc_default(backends):
-    if is_pypy and 'gevent' in backends:
-        return backends['gevent']()
-    if 'stackless' in backends:
-        return backends['stackless']()
+    try:
+        if is_pypy and 'gevent' in backends:
+            return backends['gevent']()
+        if 'stackless' in backends:
+            return backends['stackless']()
+    except ImportError:
+        pass
     raise SystemError('Swallow this, please.')
 
 

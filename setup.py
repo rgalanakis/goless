@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='goless',
-    version='0.0.4',
+    version='0.5.0',
     author='Rob Galanakis',
     author_email='rob.galanakis@gmail.com',
     description="Provides a Go-like concurrent programming style in Python.",

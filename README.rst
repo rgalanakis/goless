@@ -12,7 +12,7 @@ goless
 ======
 
 The **goless** library provides **Go** programming language
-semantics built on top of **stackless** or **gevent**.
+semantics built on top of **gevent**, **PyPy**, or **Stackless Python**.
 It works with PyPy, CPython, and Stackless Python interpreters.
 
 **goless** has extensive documentation and examples.

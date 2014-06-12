@@ -1,10 +1,13 @@
 """
-``goless`` introduces go-like channels and select to Python,
-built on top of Stackless Python (and maybe one day gevent).
-Use :func:`goless.chan` to create a synchronous or buffered channel.
-Use :func:`goless.select` like you would the ``Select`` function in Go's reflect package
-(since Python lacks a switch/case statement, replicating Go's select statement syntax
-wasn't very effective).
+goless provides Golang semantics built on top of
+gevent, PyPy, or Stackless Python.
+Use goless.chan to create a synchronous or buffered channel.
+Use goless.go to start a goroutine.
+Use goless.select like you would Go's reflect.Select function,
+with goless.dcase, rcase, and scase.
+
+goless is fully documented, tested, and has many examples.
+See http://goless.readthedocs.org/ for more documentation.
 """
 
 import logging
@@ -13,6 +16,7 @@ import sys
 import traceback
 
 from .backends import current as _be
+
 
 # noinspection PyUnresolvedReferences
 from .channels import chan, ChannelClosed

@@ -190,8 +190,8 @@ If neither ``gevent`` or ``stackless`` are available,
 
 .. _a-compat:
 
-Compatibility with PyPy and Python 3
-====================================
+Compatibility Details
+=====================
 
 The good news is that you probably don't need to worry about any of this,
 and goless works almost everywhere.
@@ -207,7 +207,7 @@ PyPy
 ----
 
 ``goless`` works under PyPy out of the box with the stackless
-backend, because it includes a ``stackless.py`` file in its standard library.
+backend, because PyPy includes a ``stackless.py`` file in its standard library.
 This appears to work properly, but fails the ``goless`` test suite.
 We are not sure why yet, as ``stackless.py`` does not have a real maintainer
 and the bug is difficult to track down.
@@ -221,7 +221,8 @@ Python 2 (CPython)
 ------------------
 
 Using Python 2 and the CPython interpreter,
-you can use the gevent backend for ``goless``.
+you can use the gevent backend for ``goless``
+with no problems.
 Under Python 2, you can just do::
 
     $ pip install gevent
@@ -241,15 +242,10 @@ under Python3 with its gevent backend::
 
 This works and is tested.
 
-Python2
--------
-
-``goless``
-
 Stackless Python
 ----------------
 
-All versions of Stackless Python should work with goless.
+All versions of Stackless Python (2 and 3) should work with goless.
 However, we cannot test with Stackless Python on Travis,
 so we only test with it locally.
 If you find any problems, *please* report an issue.

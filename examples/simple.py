@@ -15,7 +15,7 @@ def simple():
             channel.send(value ** 2)
     goless.go(goroutine)
 
-    for i in xrange(2, 5):
+    for i in range(2, 5):
         channel.send(i)
         squared = channel.recv()
         print('%s squared is %s' % (i, squared))

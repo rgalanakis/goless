@@ -20,7 +20,7 @@ def main():
     out  = goless.chan()
 
     def produce():
-        for i in xrange(10):
+        for i in range(10):
             msgs.send(i)
         done.send()
 

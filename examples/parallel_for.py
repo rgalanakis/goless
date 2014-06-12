@@ -24,7 +24,7 @@ def dosomething(x):
 
 def pfor():
     n = 10
-    items = xrange(n)
+    items = range(n)
     results = [None] * n
     semaphore = goless.chan(n)
 
@@ -34,7 +34,7 @@ def pfor():
 
     for i, item in enumerate(items):
         mapper(i, item)
-    for _ in xrange(n):
+    for _ in range(n):
         semaphore.recv()
     print('Finished: %s' % results)
 

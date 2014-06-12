@@ -53,10 +53,12 @@ def go(func, *args, **kwargs):
     :param args: Positional arguments to ``func``.
     :param kwargs: Keyword arguments to ``func``.
     """
+
     def safe_wrapped(f):
         # noinspection PyBroadException
         try:
             f(*args, **kwargs)
         except:
             on_panic(*sys.exc_info())
+
     _be.start(safe_wrapped, func)

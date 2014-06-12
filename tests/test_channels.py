@@ -3,6 +3,7 @@ from . import BaseTests
 import goless
 import goless.channels as gochans
 from goless.backends import current as be
+from goless.compat import range
 
 
 class ChanTests(BaseTests):
@@ -33,7 +34,7 @@ class ChanTestMixin(object):
     def test_range_with_closed_channel(self):
         chan = self.makechan()
         sendCount = min(chan.maxsize, 5)
-        data2send = range(sendCount)
+        data2send = list(range(sendCount))
         for data in data2send:
             be.run(chan.send, data)
         chan.close()
@@ -95,7 +96,7 @@ class AsyncChannelTests(BaseTests, ChanTestMixin):
         # Obviously we cannot test an infinite buffer,
         # but we can just test a huge one's behavior.
         chan = gochans.AsyncChannel()
-        for _ in xrange(10000):
+        for _ in range(10000):
             chan.send()
         chan.close()
         for _ in chan:

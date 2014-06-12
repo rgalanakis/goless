@@ -5,6 +5,7 @@ import sys
 import time
 
 from goless import backends, chan, go, selecting
+from goless.compat import range
 
 
 QUEUE_LEN = 10000
@@ -19,14 +20,14 @@ def bench_channel(chan_size):
     c = chan(chan_size)
 
     def func():
-        for _ in xrange(QUEUE_LEN):
+        for _ in range(QUEUE_LEN):
             c.send(0)
         c.close()
     count = 0
 
     go(func)
     start = time.clock()
-    for _ in xrange(QUEUE_LEN):
+    for _ in range(QUEUE_LEN):
         c.recv()
         count += 1
     end = time.clock()
@@ -57,7 +58,7 @@ def bench_select(use_default):
     go(sender)
 
     start = time.clock()
-    for i in xrange(QUEUE_LEN):
+    for _ in range(QUEUE_LEN):
         selecting.select(cases)
     end = time.clock()
     return end - start
@@ -93,7 +94,7 @@ def prime():
         count = 10
     global WRITE_ENABLED
     WRITE_ENABLED = False
-    for _ in xrange(count):
+    for _ in range(count):
         bench_channels()
         bench_selects()
     WRITE_ENABLED = True

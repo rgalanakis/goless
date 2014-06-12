@@ -1,7 +1,7 @@
 import collections as _collections
-import sys
 
 from .backends import current as _be
+from .compat import range, maxint
 
 
 class ChannelClosed(Exception):
@@ -174,9 +174,9 @@ class BufferedChannel(GoChannel):
         # and raise a ChannelClosed error.
         GoChannel.close(self)
         balance = self.waiting_chan.balance
-        for _ in xrange(balance, 0):
+        for _ in range(balance, 0):
             self.waiting_chan.send(None)
-        for _ in xrange(balance):
+        for _ in range(balance):
             self.waiting_chan.receive()
 
 
@@ -202,7 +202,7 @@ class AsyncChannel(BufferedChannel):
     """
 
     def __init__(self):
-        BufferedChannel.__init__(self, sys.maxint)
+        BufferedChannel.__init__(self, maxint)
 
 
 def chan(size=0):

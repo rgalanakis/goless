@@ -54,3 +54,12 @@ class CalcBackendTests(BaseTests):
             pass
 
         self.assertEqual(BE().shortname(), 'BE')
+
+
+class NullBackendTests(BaseTests):
+    def test_raises_on_access(self):
+        nb = backends.NullBackend()
+        with self.assertRaises(backends.NoValidBackend):
+            nb.shortname()
+        with self.assertRaises(backends.NoValidBackend):
+            nb()

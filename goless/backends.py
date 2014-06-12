@@ -105,6 +105,23 @@ def _make_gevent():
     return GeventBackend()
 
 
+class NoValidBackend(Exception):
+    pass
+
+
+class NullBackend(Backend):
+    """Backend that raises a NoValidBackend when it is accessed or called.
+    This allows goless to be imported, but not used,
+    when no backend can be found.
+    """
+
+    def __getattribute__(self, item):
+        raise NoValidBackend()
+
+    def __call__(self, *args, **kwargs):
+        raise NoValidBackend()
+
+
 _default_backends = {
     'stackless': _make_stackless,
     'gevent': _make_gevent

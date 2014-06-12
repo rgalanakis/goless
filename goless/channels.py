@@ -1,7 +1,7 @@
 import collections as _collections
 
 from .backends import current as _be
-from .compat import range, maxint
+from .compat import range, maxint, PY3
 
 
 class ChannelClosed(Exception):
@@ -83,11 +83,18 @@ class GoChannel(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def _next(self):
         try:
             return self.recv()
         except ChannelClosed:
             raise StopIteration
+
+    if PY3:
+        def __next__(self):
+            return self._next()
+    else:
+        def next(self):
+            return self._next()
 
 
 class BufferedChannel(GoChannel):

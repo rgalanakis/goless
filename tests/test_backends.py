@@ -33,6 +33,15 @@ class CalcBackendTests(BaseTests):
         with self.assertRaises(RuntimeError):
             self.calc('', {})
 
+    def test_default_backend_error_uses_fallback(self):
+        # Regression test for found bug.
+        testerbackends = dict(test_backends)
+
+        def raiseit():
+            raise ImportError('ho ho ho')
+        testerbackends['gevent'] = raiseit
+        self.assertEqual(self.calc('', testerbackends, ispypy=True), 'be_S')
+
     def test_no_valid_backends_raises(self):
         def raiseit():
             raise KeyError()

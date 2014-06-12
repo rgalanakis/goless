@@ -64,6 +64,8 @@ class NullBackendTests(BaseTests):
             nb()
 
     def test_novalidbackend_msg(self):
-        with self.assertRaises(backends.NoValidBackend) as ex:
+        try:
             backends.NullBackend().shortname()
+            self.fail('Should have raised!')
+        except backends.NoValidBackend as ex:
             self.assertEqual(ex.args, (backends.NO_VALID_BACKEND_MSG,))

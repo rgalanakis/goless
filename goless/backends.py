@@ -173,7 +173,7 @@ def calculate_backend(name_from_env, backends=None):
             return maker()
         except Exception:
             pass
-    raise RuntimeError('No backend could be created.')
+    return NullBackend()
 
 
 current = calculate_backend(os.getenv('GOLESS_BACKEND', ''))

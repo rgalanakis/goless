@@ -43,7 +43,8 @@ class GoChannel(object):
         """
         Receive a value from the channel.
         Receiving will always block if no value is available.
-        If the channel is already closed, :class:`goless.ChannelClosed` will be raised.
+        If the channel is already closed,
+        :class:`goless.ChannelClosed` will be raised.
         If the channel closes during a blocking ``recv``,
         :class:`goless.ChannelClosed` will be raised. (#TODO)
         """
@@ -72,8 +73,10 @@ class GoChannel(object):
     def close(self):
         """
         Closes the channel, not allowing further communication.
-        Any blocking senders or receivers will be woken up and raise :class:`goless.ChannelClosed`.
-        Receiving or sending to a closed channel will raise :class:`goless.ChannelClosed`.
+        Any blocking senders or receivers will be woken up and
+        raise :class:`goless.ChannelClosed`.
+        Receiving or sending to a closed channel
+        will raise :class:`goless.ChannelClosed`.
         """
         self._closed = True
 
@@ -149,7 +152,11 @@ class BufferedChannel(GoChannel):
         return self.values_deque or self.waiting_chan.balance > 0
 
     def send_ready(self):
-        return len(self.values_deque) < self.maxsize or self.waiting_chan.balance < 0
+        room_in_queue = len(self.values_deque) < self.maxsize
+        if room_in_queue:
+            return True
+        receivers_waiting = self.waiting_chan.balance < 0
+        return receivers_waiting
 
     def close(self):
         # This next yield gives a chance to all blocked receivers to return
@@ -161,7 +168,8 @@ class BufferedChannel(GoChannel):
         # but still get a ChannelClosed error.
         _be.yield_()
         # To make sure all pending tasklets are woken up,
-        # we mark the channel closed and then spam out sends or receives if needed.
+        # we mark the channel closed and then spam out sends or
+        # receives if needed.
         # The tasklets will wake up, see the channel is closed,
         # and raise a ChannelClosed error.
         GoChannel.close(self)

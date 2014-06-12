@@ -12,7 +12,6 @@ See http://goless.readthedocs.org/ for more documentation.
 
 import logging
 import sys
-
 import traceback
 
 from .backends import current as _be

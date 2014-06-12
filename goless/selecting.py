@@ -18,7 +18,8 @@ class rcase(object):
 
 # noinspection PyPep8Naming,PyShadowingNames
 class scase(object):
-    """A case that will ``chan.send(value)`` when the channel is able to send."""
+    """A case that will ``chan.send(value)``
+    when the channel is able to send."""
     def __init__(self, chan, value):
         self.chan = chan
         self.value = value

@@ -173,6 +173,7 @@ def calculate_backend(name_from_env, backends=None):
             raise RuntimeError(
                 'Invalid backend %r specified. Valid backends are: %s'
                 % (name_from_env, _default_backends.keys()))
+        # noinspection PyCallingNonCallable
         return backends[name_from_env]()
     try:
         return _calc_default(backends)

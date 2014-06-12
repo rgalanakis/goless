@@ -14,7 +14,6 @@ See http://blog.golang.org/pipelines for more info.
 from __future__ import print_function
 
 import hashlib
-
 import os
 
 import goless
@@ -28,7 +27,7 @@ def pipeline():
     def scanner():
         for d, dn, f in os.walk('.'):
             for fn in f:
-                files.send(os.path.join(d,fn))
+                files.send(os.path.join(d, fn))
         files.close()
 
     def hasher():

@@ -25,6 +25,7 @@ from __future__ import print_function
 
 import goless
 
+
 # First create the async versions built on promises
 def inverse_async(future):
     c = goless.chan()

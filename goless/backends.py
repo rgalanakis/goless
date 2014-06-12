@@ -105,8 +105,7 @@ def _make_gevent():
     return GeventBackend()
 
 
-NO_VALID_BACKEND_MSG = """
-No valid backend could be created.
+NO_VALID_BACKEND_MSG = """No valid backend could be created.
 Valid backends are
 gevent (for CPython, Stackless Python, or PyPy with newer version of gevent)
 and

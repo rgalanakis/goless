@@ -12,7 +12,7 @@ install:
 script:
   tox -e $TOX_ENV
 after_success:
-  - "if [ \"$RUN_COVERALLS\" == \"1\" ]; then eval \"coveralls\"; fi"
+  - "if [ \"$RUN_COVERALLS\" == \"1\" ]; then eval \"coveralls\"; echo \"Uploaded coverage.\"; fi"
 cache:
   directories:
     - .tox

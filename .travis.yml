@@ -8,13 +8,13 @@ env:
   - TOX_ENV=27slp
 before_install:
   - wget http://www.stackless.com/binaries/stackless2.7_2.7.6-1_amd64.deb
-  - sudo dpkg -i stackless2.7_2.7.6-1_amd64.deb
+  - sudo apt-get install dpkg-dev
+  - dpkg-deb -x stackless2.7_2.7.6-1_amd64.deb $HOME/stackless-deb
 #install:
 #  - "pip install tox --download-cache $HOME/.pip-cache"
 #  - "pip install coveralls --download-cache $HOME/.pip-cache"
 script:
-  - ls /usr/local/bin | grep python
-  - ls /usr/bin | grep python
+  - $HOME/stackless-deb/opt/stackless-2.7.6/bin/python --version
 #  - tox -e $TOX_ENV
 #after_failure:
 #  - "cat /home/travis/build/rgalanakis/goless/.tox/33gevent/log/33gevent-*.log"

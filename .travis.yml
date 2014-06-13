@@ -4,8 +4,7 @@ python:
 env:
   - TOX_ENV=27gevent RUN_COVERALLS=1
   - TOX_ENV=pypygevent
-# Not working yet, for some reason.
-#  - TOX_ENV=33gevent
+  - TOX_ENV=33gevent
 install:
   - "pip install tox --download-cache $HOME/.pip-cache"
   - "pip install coveralls --download-cache $HOME/.pip-cache"

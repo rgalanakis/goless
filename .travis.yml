@@ -8,7 +8,7 @@ env:
   - TOX_ENV=27slp
 before_install:
   - wget http://www.robg3d.com/downloads/stackless-2.7.6_amd64.zip
-  - unzip stackless-2.7.6_amd64.zip
+  - unzip stackless-2.7.6_amd64.zip -d $HOME
 #install:
 #  - "pip install tox --download-cache $HOME/.pip-cache"
 #  - "pip install coveralls --download-cache $HOME/.pip-cache"

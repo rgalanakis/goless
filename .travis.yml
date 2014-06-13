@@ -11,7 +11,7 @@ before_install:
   - if [ \"$TOX_ENV\" == \"27slptravis\" ]; then wget http://www.robg3d.com/downloads/stackless-2.7.6_amd64.zip; fi
   - if [ \"$TOX_ENV\" == \"27slptravis\" ]; then unzip -q stackless-2.7.6_amd64.zip -d $HOME; fi
   - if [ \"$TOX_ENV\" == \"32slptravis\" ]; then wget http://www.robg3d.com/downloads/stackless-3.2.2_amd64.zip; fi
-  - if [ \"$TOX_ENV\" == \"32slptravis\" ]; then unzip -q stackless-3.2.2_amd64.zip -d $HOME; fi
+  - if [ \"$TOX_ENV\" == \"32slptravis\" ]; then unzip stackless-3.2.2_amd64.zip -d $HOME; fi
 #install:
   - "pip install tox --download-cache $HOME/.pip-cache"
 #  - "pip install coveralls --download-cache $HOME/.pip-cache"

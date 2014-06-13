@@ -27,4 +27,4 @@ deploy:
     secure: NpFysWBjDlQh4i0EurrA4u4YVAWwfpouopvu+WePYGdae1ebaYtIgXEHLW5yJrNJVSNhG7XkDPXuKUUW+5aM7sAZKQm8gfUN1MCBT6Idpnqq7skQtbmkMOZ06yvJrBhHwL4mZoMJ+ikR0DPqMqgQJuq2eiXNN6mvIGaQF+eJwWY=
   on:
     branch: production
-    condition: "$TOX_ENV=27gevent"
+    condition: "$TOX_ENV = 27gevent"

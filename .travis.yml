@@ -4,13 +4,14 @@ python:
 env:
   - TOX_ENV=27gevent
   - TOX_ENV=pypygevent
-# Travis has a problem compiling gevent with cython
-#  - TOX_ENV=33gevent
+  - TOX_ENV=33gevent
 install:
   - "pip install tox --download-cache $HOME/.pip-cache"
   - "pip install coveralls --download-cache $HOME/.pip-cache"
 script:
   tox -e $TOX_ENV
+after_failure:
+  - "cat /home/travis/build/rgalanakis/goless/.tox/33gevent/log/33gevent-*.log"
 after_success:
   - coveralls
 cache:

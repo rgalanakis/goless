@@ -13,7 +13,7 @@ before_install:
 #  - "pip install tox --download-cache $HOME/.pip-cache"
 #  - "pip install coveralls --download-cache $HOME/.pip-cache"
 script:
-  - $HOME/stackless-2.7.6_amd64/bin/python --version
+  - $HOME/stackless-2.7.6/bin/python --version
 #  - tox -e $TOX_ENV
 #after_failure:
 #  - "cat /home/travis/build/rgalanakis/goless/.tox/33gevent/log/33gevent-*.log"

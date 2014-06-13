@@ -1,6 +1,6 @@
-import platform
-
 import os
+import platform
+import sys
 
 
 class Backend(object):
@@ -108,10 +108,10 @@ def _make_gevent():
 NO_VALID_BACKEND_MSG = """No valid backend could be created.
 Valid backends are
 gevent (for CPython, Stackless Python, or PyPy with newer version of gevent)
-and
-stackless (for Stackless Python or PyPy).
+and stackless (for Stackless Python or PyPy).
+You are currently running %s.
 See goless.backends.calculate_backend for more details about what backend
-is chosen under what conditions."""
+is chosen under what conditions.""" % sys.executable
 
 
 class NoValidBackend(Exception):
@@ -165,6 +165,12 @@ def calculate_backend(name_from_env, backends=None):
       successfully.
     - If no runtime can be created, return a NullBackend,
       which will error when accessed.
+
+    The "default" backend is the less-easy backend for a runtime.
+    Since PyPy has stackless by default, gevent is intentional.
+    Since Stackless is a separate interpreter for CPython,
+    that is more intentional than gevent.
+    We feel this is a good default behavior.
     """
     if backends is None:
         backends = _default_backends
@@ -173,6 +179,7 @@ def calculate_backend(name_from_env, backends=None):
             raise RuntimeError(
                 'Invalid backend %r specified. Valid backends are: %s'
                 % (name_from_env, _default_backends.keys()))
+        # Allow this to raise, since it was explicitly set from the environment
         # noinspection PyCallingNonCallable
         return backends[name_from_env]()
     try:

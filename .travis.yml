@@ -5,16 +5,15 @@ env:
 #  - TOX_ENV=27gevent
 #  - TOX_ENV=pypygevent
 #  - TOX_ENV=33gevent
-  - TOX_ENV=27slp
+  - TOX_ENV=27slptravis
 before_install:
   - wget http://www.robg3d.com/downloads/stackless-2.7.6_amd64.zip
   - unzip stackless-2.7.6_amd64.zip -d $HOME
-#install:
-#  - "pip install tox --download-cache $HOME/.pip-cache"
+install:
+  - "pip install tox --download-cache $HOME/.pip-cache"
 #  - "pip install coveralls --download-cache $HOME/.pip-cache"
 script:
-  - $HOME/stackless-2.7.6/bin/python --version
-#  - tox -e $TOX_ENV
+  - tox -e $TOX_ENV
 #after_failure:
 #  - "cat /home/travis/build/rgalanakis/goless/.tox/33gevent/log/33gevent-*.log"
 #  - "cat /home/travis/.pip/pip.log"

@@ -19,8 +19,16 @@ import os
 
 PYPY = os.path.expanduser('~/venvs/gopypy/bin/python')
 SLP = os.path.expanduser('~/dev/venvs/go27slp/bin/python')
+PY3 = os.path.expanduser('~/dev/venvs/go33/bin/python')
+EXE_BACKEND_MATRIX = [
+    [PYPY, 'stackless'],
+    [PYPY, 'gevent'],
+    [SLP, 'stackless'],
+    [SLP, 'gevent'],
+    [PY3, 'gevent']
+]
 RST = os.path.join('doc', 'benchtable.rst')
-COLUMN_WIDTHS = 8, 9, 14, 7
+COLUMN_WIDTHS = 9, 9, 14, 7
 
 BenchmarkResult = collections.namedtuple(
     'BenchResult', ['platform', 'backend', 'benchmark', 'time'])
@@ -66,9 +74,8 @@ def collect_results():
     BenchmarkResults, sorted by benchmark and time taken.
     """
     results = []
-    for exe in SLP, PYPY:
-        for be in 'gevent', 'stackless':
-            results.extend(benchmark_process_and_backend(exe, be))
+    for exe, backendname in EXE_BACKEND_MATRIX:
+        results.extend(benchmark_process_and_backend(exe, backendname))
     results.extend(benchmark_go())
 
     results.sort(
@@ -116,7 +123,7 @@ def main():
         w('.. table:: Current goless Benchmarks')
         w('')
         w(make_sepline())
-        w('    |Platform|Backend  |Benchmark     |Time   |')
+        w('    |Platform |Backend  |Benchmark     |Time   |')
         w(make_sepline('='))
         for br in results:
             f.write('    ')

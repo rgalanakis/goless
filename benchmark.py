@@ -72,13 +72,14 @@ def bench_selects():
 
 
 WRITE_ENABLED = True
+PYIMPL = '%s%s' % (platform.python_implementation(), sys.version_info[0])
 
 
 def write_result(benchname, elapsed):
     if not WRITE_ENABLED:
         return
     w = sys.stdout.write
-    w(platform.python_implementation())
+    w(PYIMPL)
     w(' ')
     w(backends.current.shortname())
     w(' ')

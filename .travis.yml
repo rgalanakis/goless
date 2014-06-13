@@ -2,14 +2,19 @@ language: python
 python:
   - "2.7"
 env:
-  - TOX_ENV=coverageenv
+  - TOX_ENV=coverageenv RUN_COVERALLS=1
+#  - TOX_ENV=27gevent
+#  - TOX_ENV=pypygevent
+#  - TOX_ENV=33gevent
 install:
   - "pip install tox --download-cache $HOME/.pip-cache"
   - "pip install coveralls --download-cache $HOME/.pip-cache"
 script:
   tox -e $TOX_ENV
 after_success:
-  coveralls
+# Is there a better way to do this, and only run coveralls
+# for the coverageenv environment?
+  - "if [ \"x$RUN_COVERALLS\" == \"x1\" ]; then eval \"coveralls\"; fi"
 cache:
   directories:
     - .tox

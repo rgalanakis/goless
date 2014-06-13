@@ -2,19 +2,25 @@ language: python
 python:
   - "2.7"
 env:
-  - TOX_ENV=27gevent
-  - TOX_ENV=pypygevent
-  - TOX_ENV=33gevent
-install:
-  - "pip install tox --download-cache $HOME/.pip-cache"
-  - "pip install coveralls --download-cache $HOME/.pip-cache"
+#  - TOX_ENV=27gevent
+#  - TOX_ENV=pypygevent
+#  - TOX_ENV=33gevent
+  - TOX_ENV=27slp
+before_install:
+  - wget http://www.stackless.com/binaries/stackless2.7_2.7.6-1_amd64.deb
+  - sudo dpkg -i stackless2.7_2.7.6-1_amd64.deb
+#install:
+#  - "pip install tox --download-cache $HOME/.pip-cache"
+#  - "pip install coveralls --download-cache $HOME/.pip-cache"
 script:
-  tox -e $TOX_ENV
-after_failure:
-  - "cat /home/travis/build/rgalanakis/goless/.tox/33gevent/log/33gevent-*.log"
-  - "cat /home/travis/.pip/pip.log"
-after_success:
-  - coveralls
+  - ls /usr/local/bin | grep python
+  - ls /usr/bin | grep python
+#  - tox -e $TOX_ENV
+#after_failure:
+#  - "cat /home/travis/build/rgalanakis/goless/.tox/33gevent/log/33gevent-*.log"
+#  - "cat /home/travis/.pip/pip.log"
+#after_success:
+#  - coveralls
 cache:
   directories:
     - .tox

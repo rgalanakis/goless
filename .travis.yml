@@ -2,23 +2,26 @@ language: python
 python:
   - "2.7"
 env:
-  - TOX_ENV=27gevent
-  - TOX_ENV=pypygevent
-  - TOX_ENV=33gevent
-  - TOX_ENV=27slptravis
+#  - TOX_ENV=27gevent
+#  - TOX_ENV=pypygevent
+#  - TOX_ENV=33gevent
+#  - TOX_ENV=27slptravis
+  - TOX_ENV=32slptravis
 before_install:
   - if [ \"$TOX_ENV\" == \"27slptravis\" ]; then wget http://www.robg3d.com/downloads/stackless-2.7.6_amd64.zip; fi
   - if [ \"$TOX_ENV\" == \"27slptravis\" ]; then unzip -q stackless-2.7.6_amd64.zip -d $HOME; fi
-install:
-  - "pip install tox --download-cache $HOME/.pip-cache"
-  - "pip install coveralls --download-cache $HOME/.pip-cache"
+  - if [ \"$TOX_ENV\" == \"32slptravis\" ]; then wget http://www.robg3d.com/downloads/stackless-3.2.2_amd64.zip; fi
+  - if [ \"$TOX_ENV\" == \"32slptravis\" ]; then unzip -q stackless-3.2.2_amd64.zip -d $HOME; fi
+#install:
+#  - "pip install tox --download-cache $HOME/.pip-cache"
+#  - "pip install coveralls --download-cache $HOME/.pip-cache"
 script:
   - tox -e $TOX_ENV
 #after_failure:
 #  - "cat /home/travis/build/rgalanakis/goless/.tox/33gevent/log/33gevent-*.log"
 #  - "cat /home/travis/.pip/pip.log"
-after_success:
-  - coveralls
+#after_success:
+#  - coveralls
 cache:
   directories:
     - .tox

@@ -2,7 +2,7 @@ language: python
 python:
   - "2.7"
 env:
-  - TOX_ENV=27gevent RUN_COVERALLS=1
+  - TOX_ENV=27gevent
   - TOX_ENV=pypygevent
 # Travis has a problem compiling gevent with cython
 #  - TOX_ENV=33gevent
@@ -12,7 +12,7 @@ install:
 script:
   tox -e $TOX_ENV
 after_success:
-  - "if [ \"$RUN_COVERALLS\" == \"1\" ]; then eval \"coveralls\"; echo \"Uploaded coverage.\"; fi"
+  - coveralls
 cache:
   directories:
     - .tox

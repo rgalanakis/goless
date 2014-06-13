@@ -12,6 +12,7 @@ script:
   tox -e $TOX_ENV
 after_failure:
   - "cat /home/travis/build/rgalanakis/goless/.tox/33gevent/log/33gevent-*.log"
+  - "cat /home/travis/.pip/pip.log"
 after_success:
   - coveralls
 cache:

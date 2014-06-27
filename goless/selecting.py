@@ -38,7 +38,7 @@ class dcase(object):
         return False
 
 
-def select(cases):
+def select(*cases):
     """
     Select the first case that becomes ready.
     If a default case (:class:`goless.dcase`) is present,
@@ -54,6 +54,11 @@ def select(cases):
     :return: ``(chosen case, received value)``.
       If the chosen case is not an :class:`goless.rcase`, it will be None.
     """
+    # Sanity check - if the first argument is a list, it should be the only argument
+    if isinstance(cases[0], list):
+        assert len(cases) == 1
+        cases = cases[0]
+    
     default = None
     for c in cases:
         if c.ready():

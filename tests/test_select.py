@@ -131,5 +131,8 @@ class SelectTests(BaseTests):
         chan3 = goless.chan(1)
         cases = [goless.scase(chan1, 1), goless.scase(chan2, 2)]
         
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             goless.select(cases, chan3)
+            
+    def test_select_with_no_args_should_do_nothing(self):
+        goless.select()

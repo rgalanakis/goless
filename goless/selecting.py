@@ -55,8 +55,11 @@ def select(*cases):
       If the chosen case is not an :class:`goless.rcase`, it will be None.
     """
     # Sanity check - if the first argument is a list, it should be the only argument
+    if len(cases) == 0:
+        return
     if isinstance(cases[0], list):
-        assert len(cases) == 1
+        if len(cases) != 1:
+            raise TypeError("Select can be called either with a list of cases or multiple case arguments, but not both")
         cases = cases[0]
     
     default = None

@@ -5,6 +5,7 @@ env:
   - TOX_ENV=27gevent
   - TOX_ENV=pypygevent
   - TOX_ENV=33gevent
+  - TOX_ENV=34gevent
   - TOX_ENV=27slptravis
 #  - TOX_ENV=32slptravis
 before_install:

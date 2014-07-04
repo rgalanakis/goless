@@ -11,7 +11,7 @@
 goless
 ======
 
-Using the **goless** library, you can write **Go** language
+Using the **goless** library, you can write `Go`_ language
 style concurrent programs in Python.
 **goless** provides functionality for channels, select, and goroutines.
 **goless** allows you to use Go's beautiful and elegant
@@ -22,5 +22,10 @@ goless works on top of **gevent**, **PyPy**, or **Stackless Python**.
 It works with PyPy, CPython, and Stackless Python interpreters,
 and Python 2.6 to 3.4.
 
-**goless** has extensive testing, documentation and examples.
+**goless** has extensive `testing`_, `documentation`_ and `examples`_.
 See https://goless.readthedocs.org/ for more information.
+
+.. _Go: http://www.golang.org
+.. _testing: https://travis-ci.org/rgalanakis/goless
+.. _examples: https://github.com/rgalanakis/goless/tree/master/examples
+.. _documentation: https://goless.readthedocs.org/

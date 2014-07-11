@@ -1,7 +1,7 @@
 import collections as _collections
 
 from .backends import current as _be, GolessException as _GolessException
-from .compat import range, maxint, PY3
+from .compat import range as _range, maxint as _maxint, PY3 as _PY3
 
 
 class ChannelClosed(_GolessException):
@@ -89,7 +89,7 @@ class GoChannel(object):
         except ChannelClosed:
             raise StopIteration
 
-    if PY3:
+    if _PY3:
         def __next__(self):
             return self._next()
     else:
@@ -181,9 +181,9 @@ class BufferedChannel(GoChannel):
         # and raise a ChannelClosed error.
         GoChannel.close(self)
         balance = self.waiting_chan.balance
-        for _ in range(balance, 0):
+        for _ in _range(balance, 0):
             self.waiting_chan.send(None)
-        for _ in range(balance):
+        for _ in _range(balance):
             self.waiting_chan.receive()
 
 
@@ -209,7 +209,7 @@ class AsyncChannel(BufferedChannel):
     """
 
     def __init__(self):
-        BufferedChannel.__init__(self, maxint)
+        BufferedChannel.__init__(self, _maxint)
 
 
 def chan(size=0):

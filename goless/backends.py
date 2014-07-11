@@ -1,7 +1,7 @@
-import contextlib
-import os
-import platform
-import sys
+import contextlib as _contextlib
+import os as _os
+import platform as _platform
+import sys as _sys
 
 
 class GolessException(Exception):
@@ -13,7 +13,7 @@ class Deadlock(GolessException):
         Exception.__init__(self, msg)
 
 
-@contextlib.contextmanager
+@_contextlib.contextmanager
 def _as_deadlock(*errtypes):
     try:
         yield
@@ -97,7 +97,7 @@ def _make_gevent():
     import gevent
     import gevent.hub
     import gevent.queue
-    deadlock_errtype = SystemError if os.name == 'nt' else gevent.hub.LoopExit
+    deadlock_errtype = SystemError if _os.name == 'nt' else gevent.hub.LoopExit
 
     class Channel(gevent.queue.Channel):
         def send(self, value):
@@ -142,7 +142,7 @@ gevent (for CPython, Stackless Python, or PyPy with newer version of gevent)
 and stackless (for Stackless Python or PyPy).
 You are currently running %s.
 See goless.backends.calculate_backend for more details about what backend
-is chosen under what conditions.""" % sys.executable
+is chosen under what conditions.""" % _sys.executable
 
 
 class NoValidBackend(Exception):
@@ -168,7 +168,7 @@ _default_backends = {
     'gevent': _make_gevent
 }
 
-is_pypy = platform.python_implementation() == 'PyPy'
+is_pypy = _platform.python_implementation() == 'PyPy'
 
 
 def _calc_default(backends):
@@ -226,4 +226,4 @@ def calculate_backend(name_from_env, backends=None):
     return NullBackend()
 
 
-current = calculate_backend(os.getenv('GOLESS_BACKEND', ''))
+current = calculate_backend(_os.getenv('GOLESS_BACKEND', ''))

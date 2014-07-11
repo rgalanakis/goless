@@ -10,9 +10,9 @@ goless is fully documented, tested, and has many examples.
 See http://goless.readthedocs.org/ for more documentation.
 """
 
-import logging
-import sys
-import traceback
+import logging as _logging
+import sys as _sys
+import traceback as _traceback
 
 from .backends import current as _be, Deadlock, GolessException
 
@@ -37,7 +37,7 @@ def on_panic(etype, value, tb):
     Called when there is an unhandled error in a goroutine.
     By default, logs and exits the process.
     """
-    logging.critical(traceback.format_exception(etype, value, tb))
+    _logging.critical(_traceback.format_exception(etype, value, tb))
     _be.propagate_exc(SystemExit, 1)
 
 
@@ -57,6 +57,6 @@ def go(func, *args, **kwargs):
         try:
             f(*args, **kwargs)
         except:
-            on_panic(*sys.exc_info())
+            on_panic(*_sys.exc_info())
 
     _be.start(safe_wrapped, func)

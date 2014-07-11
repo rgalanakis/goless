@@ -60,6 +60,10 @@ def select(*cases):
     if isinstance(cases[0], list):
         if len(cases) != 1:
             raise TypeError("Select can be called either with a list of cases or multiple case arguments, but not both")
+        if len(cases[0]) == 0:
+            # Handle the case of an empty list as an argument, and prevent the raising of a SystemError by libev.
+            return
+        
         cases = cases[0]
     
     default = None

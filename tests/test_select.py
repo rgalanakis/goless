@@ -121,8 +121,9 @@ class SelectTests(BaseTests):
             
     def test_select_accepts_args(self):
         chan1 = goless.chan(1)
-        chosen, val = goless.select(goless.scase(chan1, 1))
-        self.assertIs(chosen, chan1)
+        scase = goless.scase(chan1, 1)
+        chosen, val = goless.select(scase)
+        self.assertIs(chosen, scase)
         self.assertIsNone(val)
         
     def test_select_raises_for_list_and_args(self):
@@ -136,3 +137,4 @@ class SelectTests(BaseTests):
             
     def test_select_with_no_args_should_do_nothing(self):
         goless.select()
+        goless.select([])

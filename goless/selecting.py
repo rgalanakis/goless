@@ -38,7 +38,7 @@ class dcase(object):
         return False
 
 
-def select(cases):
+def select(*cases):
     """
     Select the first case that becomes ready.
     If a default case (:class:`goless.dcase`) is present,
@@ -54,6 +54,18 @@ def select(cases):
     :return: ``(chosen case, received value)``.
       If the chosen case is not an :class:`goless.rcase`, it will be None.
     """
+    # Sanity check - if the first argument is a list, it should be the only argument
+    if len(cases) == 0:
+        return
+    if isinstance(cases[0], list):
+        if len(cases) != 1:
+            raise TypeError("Select can be called either with a list of cases or multiple case arguments, but not both")
+        if len(cases[0]) == 0:
+            # Handle the case of an empty list as an argument, and prevent the raising of a SystemError by libev.
+            return
+        
+        cases = cases[0]
+    
     default = None
     for c in cases:
         if c.ready():

@@ -138,3 +138,7 @@ class SelectTests(BaseTests):
     def test_select_with_no_args_should_do_nothing(self):
         goless.select()
         goless.select([])
+
+    def test_raises_deadlock_if_no_goroutines(self):
+        with self.assertRaises(goless.Deadlock):
+            goless.select(goless.rcase(goless.chan()))

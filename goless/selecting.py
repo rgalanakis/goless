@@ -1,4 +1,4 @@
-from .backends import current as _be
+from .backends import current as _be, Deadlock as _Deadlock
 
 
 # noinspection PyPep8Naming,PyShadowingNames
@@ -77,6 +77,14 @@ def select(*cases):
         # noinspection PyCallingNonCallable
         return default, None
 
+    # We need to check for deadlocks before selecting.
+    # We can't rely on the underlying backend to do it,
+    # as we do for channels, since we don't do an actual send or recv here.
+    # It's possible to still have a deadlock unless we move the check into
+    # the loop, but since the check is slow
+    # (gevent doesn't provide a fast way), let's leave it out here.
+    if _be.would_deadlock():
+        raise _Deadlock('No other tasklets running, cannot select.')
     while True:
         for c in cases:
             if c.ready():

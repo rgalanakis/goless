@@ -1,4 +1,5 @@
 import contextlib as _contextlib
+import gc as _gc
 import os as _os
 import platform as _platform
 import sys as _sys
@@ -51,6 +52,11 @@ class Backend(object):
         so the program hears it and it doesn't die lonely in a tasklet."""
         raise NotImplementedError()
 
+    def would_deadlock(self):
+        """Return True if a send or receive would deadlock
+        (current tasklet/greenlet is the last one running)."""
+        raise NotImplementedError()
+
 
 # We can't easily use stackless on our CI,
 # so don't worry about covering it.
@@ -90,6 +96,9 @@ def _make_stackless():  # pragma: no cover
         def propagate_exc(self, errtype, *args):
             stackless.getmain().throw(errtype, *args)
 
+        def would_deadlock(self):
+            return stackless.runcount == 1
+
     return StacklessBackend()
 
 
@@ -97,6 +106,7 @@ def _make_gevent():
     import gevent
     import gevent.hub
     import gevent.queue
+    import greenlet
     deadlock_errtype = SystemError if _os.name == 'nt' else gevent.hub.LoopExit
 
     class Channel(gevent.queue.Channel):
@@ -132,6 +142,17 @@ def _make_gevent():
 
         def propagate_exc(self, errtype, *args):
             raise errtype
+
+        def would_deadlock(self):
+            # The Hub and main greenlet are always running,
+            # if there are more than those alive, we aren't going to deadlock.
+            count = 0
+            for obj in _gc.get_objects():
+                if isinstance(obj, greenlet.greenlet) and not obj.dead:
+                    count += 1
+                if count > 2:
+                    return False
+            return True
 
     return GeventBackend()
 

@@ -14,7 +14,7 @@ import logging
 import sys
 import traceback
 
-from .backends import current as _be
+from .backends import current as _be, Deadlock, GolessException
 
 # noinspection PyUnresolvedReferences
 from .channels import chan, ChannelClosed

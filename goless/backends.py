@@ -4,7 +4,11 @@ import platform
 import sys
 
 
-class Deadlock(Exception):
+class GolessException(Exception):
+    pass
+
+
+class Deadlock(GolessException):
     def __init__(self, msg):
         Exception.__init__(self, msg)
 

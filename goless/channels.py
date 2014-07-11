@@ -1,10 +1,10 @@
 import collections as _collections
 
-from .backends import current as _be
+from .backends import current as _be, GolessException as _GolessException
 from .compat import range, maxint, PY3
 
 
-class ChannelClosed(Exception):
+class ChannelClosed(_GolessException):
     """
     Exception raised to indicate a channel is closing or has closed.
     """

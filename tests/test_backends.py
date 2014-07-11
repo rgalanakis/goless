@@ -69,3 +69,18 @@ class NullBackendTests(BaseTests):
             self.fail('Should have raised!')
         except backends.NoValidBackend as ex:
             self.assertEqual(ex.args, (backends.NO_VALID_BACKEND_MSG,))
+
+
+class CurrentBackendTests(BaseTests):
+    """
+    Tests that ensure the active backend adheres to its contract.
+    Would need to be run for every backend for full coverage.
+    """
+
+    def testRecvWithNoWaitersRaisesDeadlock(self):
+        with self.assertRaises(backends.Deadlock):
+            backends.current.channel().receive()
+
+    def testSendWithNoWaitersRaisesDeadlock(self):
+        with self.assertRaises(backends.Deadlock):
+            backends.current.channel().send(1)

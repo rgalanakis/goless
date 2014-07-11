@@ -1,6 +1,20 @@
+import contextlib
 import os
 import platform
 import sys
+
+
+class Deadlock(Exception):
+    def __init__(self, msg):
+        Exception.__init__(self, msg)
+
+
+@contextlib.contextmanager
+def _as_deadlock(*errtypes):
+    try:
+        yield
+    except errtypes as e:
+        raise Deadlock(repr(e))
 
 
 class Backend(object):
@@ -39,6 +53,15 @@ class Backend(object):
 def _make_stackless():  # pragma: no cover
     import stackless
 
+    class StacklessChannel(stackless.channel):
+        def send(self, value):
+            with _as_deadlock(RuntimeError):
+                return stackless.channel.send(self, value)
+
+        def receive(self):
+            with _as_deadlock(RuntimeError):
+                return stackless.channel.receive(self)
+
     class StacklessBackend(Backend):
         def shortname(self):
             return 'stackless'
@@ -52,7 +75,7 @@ def _make_stackless():  # pragma: no cover
             return t
 
         def channel(self):
-            return stackless.channel()
+            return StacklessChannel()
 
         def yield_(self):
             return stackless.schedule()
@@ -68,14 +91,18 @@ def _make_stackless():  # pragma: no cover
 
 def _make_gevent():
     import gevent
+    import gevent.hub
     import gevent.queue
+    deadlock_errtype = SystemError if os.name == 'nt' else gevent.hub.LoopExit
 
     class Channel(gevent.queue.Channel):
         def send(self, value):
-            self.put(value)
+            with _as_deadlock(deadlock_errtype):
+                self.put(value)
 
         def receive(self):
-            return self.get()
+            with _as_deadlock(deadlock_errtype):
+                return self.get()
 
     class GeventBackend(Backend):
         def shortname(self):

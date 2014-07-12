@@ -89,6 +89,13 @@ class CurrentBackendTests(BaseTests):
     def testYieldNoWaitersDoesNotRaiseDeadlock(self):
         backends.current.yield_()
 
+    def testChanOpsRaisesDeadlock(self):
+        c = backends.current.channel()
+        with self.assertRaises(backends.Deadlock):
+            c.send(1)
+        with self.assertRaises(backends.Deadlock):
+            c.receive()
+
 
 class AsDeadlockTests(BaseTests):
     def testReraises(self):

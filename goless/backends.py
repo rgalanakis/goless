@@ -96,8 +96,10 @@ def _make_stackless():  # pragma: no cover
         def yield_(self):
             try:
                 return stackless.schedule()
-            except RuntimeError:
-                pass
+            except RuntimeError as ex:
+                if ex.args[0] != 'No runnable tasklets left.':
+                    pass
+                raise
 
         def resume(self, tasklet):
             tasklet.run()
@@ -106,7 +108,9 @@ def _make_stackless():  # pragma: no cover
             stackless.getmain().throw(errtype, *args)
 
         def would_deadlock(self):
-            return stackless.runcount == 1
+            if hasattr(stackless, 'runcount'):
+                return stackless.runcount == 1
+            return stackless.getruncount()
 
     return StacklessBackend()
 

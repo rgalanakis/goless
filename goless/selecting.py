@@ -54,18 +54,19 @@ def select(*cases):
     :return: ``(chosen case, received value)``.
       If the chosen case is not an :class:`goless.rcase`, it will be None.
     """
-    # Sanity check - if the first argument is a list, it should be the only argument
     if len(cases) == 0:
         return
+    # If the first argument is a list, it should be the only argument
     if isinstance(cases[0], list):
         if len(cases) != 1:
-            raise TypeError("Select can be called either with a list of cases or multiple case arguments, but not both")
-        if len(cases[0]) == 0:
-            # Handle the case of an empty list as an argument, and prevent the raising of a SystemError by libev.
-            return
-        
+            raise TypeError('Select can be called either with a list of cases '
+                            'or multiple case arguments, but not both.')
         cases = cases[0]
-    
+        if not cases:
+            # Handle the case of an empty list as an argument,
+            # and prevent the raising of a SystemError by libev.
+            return
+
     default = None
     for c in cases:
         if c.ready():

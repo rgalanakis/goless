@@ -150,8 +150,8 @@ def _make_gevent():
             for obj in _gc.get_objects():
                 if isinstance(obj, greenlet.greenlet) and not obj.dead:
                     count += 1
-                if count > 2:
-                    return False
+                    if count > 2:
+                        return False
             return True
 
     return GeventBackend()

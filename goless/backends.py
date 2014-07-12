@@ -116,15 +116,14 @@ def _make_gevent():
     import gevent.hub
     import gevent.queue
     import greenlet
-    deadlock_errtype = SystemError if _os.name == 'nt' else gevent.hub.LoopExit
 
     class Channel(gevent.queue.Channel):
         def send(self, value):
-            with as_deadlock(deadlock_errtype):
+            with as_deadlock(gevent.hub.LoopExit):
                 self.put(value)
 
         def receive(self):
-            with as_deadlock(deadlock_errtype):
+            with as_deadlock(gevent.hub.LoopExit):
                 return self.get()
 
     class GeventBackend(Backend):
@@ -144,7 +143,7 @@ def _make_gevent():
             return Channel()
 
         def yield_(self):
-            with as_deadlock(deadlock_errtype):
+            with as_deadlock(gevent.hub.LoopExit):
                 gevent.sleep()
 
         def resume(self, tasklet):

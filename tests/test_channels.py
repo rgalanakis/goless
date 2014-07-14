@@ -87,6 +87,29 @@ class SyncChannelTests(BaseTests, ChanTestMixin):
     def test_channel_send_raises_when_closed(self):
         self._test_channel_raises_when_closed('send')
 
+    def _successful_op_does_not_yield_control(self, thisop, otherop):
+        chan = self.makechan()
+        actions = []
+
+        def other():
+            actions.append('other pending')
+            getattr(chan, otherop)()
+            actions.append('other acted')
+
+        actions.append('other start')
+        goless.go(other)
+        actions.append('this pending')
+        getattr(chan, thisop)()
+        actions.append('this acted')
+
+        self.assertEqual(actions, [
+            'other start',
+            'this pending',
+            'other pending',
+            'other acted',
+            'this acted'
+        ])
+
 
 class AsyncChannelTests(BaseTests, ChanTestMixin):
     def makechan(self):
@@ -168,16 +191,19 @@ class BackendChannelSenderReceiverPriorityTest(BaseTests):
     """
     Tests if the current backend channel implementation has the correct
     sender/receiver priority (aka preference in stackless).
-    Current implementations of goless channels depend on receiver having the execution priotity!
+    Current implementations of goless channels
+    depend on receiver having the execution priotity!
     """
 
-    def test_be_has_correct_sender_receiver_priority(self):
+    def test_has_correct_sender_receiver_priority(self):
         c = be.channel()
         r = []
+
         def do_send():
             r.append("s1")
             c.send(None)
             r.append("s2")
+
         def do_receive():
             r.append("r1")
             c.receive()
@@ -187,3 +213,48 @@ class BackendChannelSenderReceiverPriorityTest(BaseTests):
         be.run(do_send)
         be.yield_()
         self.assertEqual(["r1", "s1", "r2", "s2"], r)
+
+    def test_successful_recv_continues(self):
+        """Test that recv with a waiting sender
+        *does not* give control to the waiting sender."""
+        chan = goless.chan()
+        actions = []
+
+        def other():
+            actions.append('recv pending')
+            chan.recv()
+            actions.append('recv acted')
+
+        goless.go(other)
+        actions.append('send pending')
+        chan.send()
+        actions.append('send acted')
+
+        self.assertEqual(actions, [
+            'send pending',
+            'recv pending',
+            'recv acted',
+            'send acted',
+        ])
+
+    def test_successful_recv_does_yield_control(self):
+        """Test that send with a waiting receiver
+        *does* give control to the waiting receiver."""
+        chan = goless.chan()
+        actions = []
+
+        def other():
+            actions.append('send pending')
+            chan.send()
+            actions.append('send acted')
+
+        goless.go(other)
+        actions.append('recv pending')
+        chan.recv()
+        actions.append('recv acted')
+
+        self.assertEqual(actions, [
+            'recv pending',
+            'send pending',
+            'recv acted',
+        ])

@@ -17,7 +17,7 @@ class Deadlock(GolessException):
 
 
 @_contextlib.contextmanager
-def as_deadlock(*errtypes):
+def as_deadlock(errtypes):
     try:
         yield
     except errtypes as e:

@@ -1,4 +1,5 @@
 import mock
+import traceback
 
 from . import BaseTests
 from goless import backends
@@ -84,3 +85,17 @@ class CurrentBackendTests(BaseTests):
     def testSendWithNoWaitersRaisesDeadlock(self):
         with self.assertRaises(backends.Deadlock):
             backends.current.channel().send(1)
+
+    def testYieldNoWaitersDoesNotRaiseDeadlock(self):
+        backends.current.yield_()
+
+
+class AsDeadlockTests(BaseTests):
+    def testReraises(self):
+        try:
+            with backends.as_deadlock(KeyError):
+                raise KeyError()
+            self.fail('Should have raised.')  # pragma: no cover
+        except backends.Deadlock:
+            raiseline = traceback.format_exc().splitlines()[-2]
+            self.assertIn('raise KeyError()', raiseline)

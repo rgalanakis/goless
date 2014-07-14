@@ -4,6 +4,8 @@ import os as _os
 import platform as _platform
 import sys as _sys
 
+from . import compat
+
 
 class GolessException(Exception):
     pass
@@ -15,11 +17,13 @@ class Deadlock(GolessException):
 
 
 @_contextlib.contextmanager
-def _as_deadlock(*errtypes):
+def as_deadlock(*errtypes):
     try:
         yield
     except errtypes as e:
-        raise Deadlock(repr(e))
+        ex = Deadlock('Error raised by backend due to detected deadlock. '
+                      'Original error: %r' % e)
+        compat.reraise(Deadlock, ex, e)
 
 
 class Backend(object):
@@ -40,7 +44,9 @@ class Backend(object):
         raise NotImplementedError()
 
     def yield_(self):
-        """Yields control for other tasklets/greenlets to run."""
+        """Yields control for other tasklets/greenlets to run.
+        If none are available, do nothing.
+        """
         raise NotImplementedError()
 
     def resume(self, tasklet):
@@ -65,11 +71,11 @@ def _make_stackless():  # pragma: no cover
 
     class StacklessChannel(stackless.channel):
         def send(self, value):
-            with _as_deadlock(RuntimeError):
+            with as_deadlock(RuntimeError):
                 return stackless.channel.send(self, value)
 
         def receive(self):
-            with _as_deadlock(RuntimeError):
+            with as_deadlock(RuntimeError):
                 return stackless.channel.receive(self)
 
     class StacklessBackend(Backend):
@@ -88,7 +94,10 @@ def _make_stackless():  # pragma: no cover
             return StacklessChannel()
 
         def yield_(self):
-            return stackless.schedule()
+            try:
+                return stackless.schedule()
+            except RuntimeError:
+                pass
 
         def resume(self, tasklet):
             tasklet.run()
@@ -111,11 +120,11 @@ def _make_gevent():
 
     class Channel(gevent.queue.Channel):
         def send(self, value):
-            with _as_deadlock(deadlock_errtype):
+            with as_deadlock(deadlock_errtype):
                 self.put(value)
 
         def receive(self):
-            with _as_deadlock(deadlock_errtype):
+            with as_deadlock(deadlock_errtype):
                 return self.get()
 
     class GeventBackend(Backend):
@@ -123,22 +132,23 @@ def _make_gevent():
             return 'gevent'  # pragma: no cover
 
         def start(self, func, *args, **kwargs):
-            greenlet = gevent.spawn(func, *args, **kwargs)
-            return greenlet
+            grnlet = gevent.spawn(func, *args, **kwargs)
+            return grnlet
 
         def run(self, func, *args, **kwargs):
-            greenlet = self.start(func, *args, **kwargs)
-            gevent.sleep()
-            return greenlet
+            grnlet = self.start(func, *args, **kwargs)
+            self.yield_()
+            return grnlet
 
         def channel(self):
             return Channel()
 
         def yield_(self):
-            gevent.sleep()
+            with as_deadlock(deadlock_errtype):
+                gevent.sleep()
 
         def resume(self, tasklet):
-            gevent.sleep()
+            self.yield_()
 
         def propagate_exc(self, errtype, *args):
             raise errtype

@@ -120,6 +120,10 @@ def _make_gevent():
     import gevent.hub
     import gevent.queue
     import greenlet
+    
+    # We're importing socket to handle an known error in libev on Windows
+    # See rgalanakis/goless#28 and surfly/gevent#459
+    import socket
 
     deadlock_errtypes = (gevent.hub.LoopExit,)
     if _os.name == 'nt':

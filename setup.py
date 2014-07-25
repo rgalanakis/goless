@@ -1,4 +1,6 @@
 from setuptools import setup
+import sys
+import warnings
 
 from goless import version, __author__, __email__, __url__, __license__
 
@@ -8,7 +10,16 @@ try:
     # noinspection PyUnresolvedReferences
     import stackless
 except ImportError:
-    requires.append('gevent>=1.0')
+    # See https://github.com/rgalanakis/goless/issues/21
+    # for why we need this (waiting for new gevent version).
+    if sys.version_info[0] == 3:
+        warnings.warn(
+            'You will need to install gevent from GitHub to use goless with '
+            'gevent under Python3. Run something like '
+            '"pip install git+https://github.com/surfly/gevent.git#gevent-egg"'
+        )
+    else:
+        requires.append('gevent>=1.0')
 
 setup(
     name='goless',

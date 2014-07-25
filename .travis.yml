@@ -2,6 +2,7 @@ language: python
 python:
   - "2.7"
 env:
+  - TOX_ENV=26gevent
   - TOX_ENV=27gevent
   - TOX_ENV=pypygevent
   - TOX_ENV=33gevent

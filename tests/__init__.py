@@ -1,4 +1,10 @@
-import unittest
+import sys
+try:
+    # noinspection PyPackageRequirements
+    import unittest2 as unittest
+    sys.modules['unittest'] = unittest
+except ImportError:
+    import unittest
 
 from goless.backends import current as be
 

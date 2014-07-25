@@ -22,7 +22,7 @@ from .channels import chan, ChannelClosed
 from .selecting import dcase, rcase, scase, select
 
 
-version_info = 0, 6, 0
+version_info = 0, 7, 0
 version = '.'.join([str(v) for v in version_info])
 
 __version__ = version

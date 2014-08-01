@@ -5,7 +5,7 @@ import warnings
 from goless import version, __author__, __email__, __url__, __license__
 
 # If stackless isn't found, then assume gevent needs to be installed.
-requires = []
+requires = ['pyzmq']
 try:
     # noinspection PyUnresolvedReferences
     import stackless

@@ -78,12 +78,10 @@ def select(*cases):
         # noinspection PyCallingNonCallable
         return default, None
 
+    count = 0
     # We need to check for deadlocks before selecting.
     # We can't rely on the underlying backend to do it,
     # as we do for channels, since we don't do an actual send or recv here.
-    # It's possible to still have a deadlock unless we move the check into
-    # the loop, but since the check is slow
-    # (gevent doesn't provide a fast way), let's leave it out here.
     if _be.would_deadlock():
         raise _Deadlock('No other tasklets running, cannot select.')
     while True:
@@ -91,3 +89,8 @@ def select(*cases):
             if c.ready():
                 return c, c.exec_()
         _be.yield_()
+        count += 1
+        if count > 2:
+            import gc, greenlet
+            g = [obj for obj in gc.get_objects() if isinstance(obj, greenlet.greenlet) and not obj.dead]
+            raise AssertionError(str(g))

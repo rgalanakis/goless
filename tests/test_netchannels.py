@@ -1,9 +1,13 @@
+import errno
+import os
 import subprocess
 import sys
 import unittest
+import zmq
 
 import goless
 import goless.netchannels as nc
+from tests import BaseTests
 
 
 SUCCESS = 234
@@ -12,31 +16,48 @@ INPUT_PORTS = [4321, 4322, 4323]
 OUTPUT_PORT = 4320
 SIMPLE_PORT = 4319
 DRAIN_PORT = 4318
+DEL_PORT = 4317
 
 
-def popen(*args):
-    nc.debug(sys.path)
-    clargs = [sys.executable, __file__] + [str(a) for a in args]
-    proc = subprocess.Popen(clargs)
-    nc.debug('Started proc %s: %s', proc.pid, args)
-    return proc
+class NetChannelTests(BaseTests):
 
+    def setUp(self):
+        BaseTests.setUp(self)
+        nc.PREFIX = self._testMethodName
 
-class NetChannelTests(unittest.TestCase):
+    def popen(self, *args):
+        env = dict(os.environ)
+        env['PYTHONPATH'] = os.pathsep.join(
+            sys.path + [os.environ.get('PYTHONPATH', '')])
+        clargs = [sys.executable, __file__] + [str(a) for a in args]
+        proc = subprocess.Popen(clargs, env=env)
+        nc.debug('Started proc %s: %s', proc.pid, args)
+
+        def safeterm():
+            try:
+                proc.terminate()
+            except OSError as ex:
+                assert ex.errno == errno.ESRCH
+        self.addCleanup(safeterm)
+        return proc
 
     def test_simple(self):
         a = nc.Address(port=SIMPLE_PORT)
-        c = nc.sender(a)
-        s = nc.receiver(a)
-        goless.go(c.send, 1)
-        got = s.recv()
-        self.assertEqual(got, 1)
+        s = nc.sender1(a)
+        r = nc.receiver(a)
+        got = []
+        goless.go(lambda: got.append(r.recv()))
+        s.send(1)
+        # goless.go(s.send, 1)
+        # s.send(1)
+        # got = r.recv()
+        self.assertEqual(got, [1])
 
     def test_drain(self):
         cnt = 2
         a = nc.Address(port=DRAIN_PORT)
         r = nc.receiver(a)
-        senders = [nc.sender(a) for _ in range(cnt)]
+        senders = [nc.sender2(a) for _ in range(cnt)]
         for i, s in enumerate(senders):
             goless.go(s.send, i * 2)
         got = r.drain(cnt)
@@ -48,14 +69,24 @@ class NetChannelTests(unittest.TestCase):
         procs = []
         ideal_datas = []
         for input_port in INPUT_PORTS:
-            procs.append(popen(input_port, '--server'))
+            procs.append(self.popen(input_port, '--server'))
             for i in range(CLIENT_COUNT):
-                procs.append(popen(input_port, '--client', i))
+                procs.append(self.popen(input_port, '--client', i))
                 ideal_datas.append(_process(i))
         results = output_chan.drain(len(INPUT_PORTS * CLIENT_COUNT))
         for proc in procs:
             self.assertEqual(proc.wait(), SUCCESS)
         self.assertEqual(sorted(results), sorted(ideal_datas))
+
+    def test_close_socket_when_del(self):
+        sock = zmq.Context().socket(zmq.REQ)
+        a = nc.Address(port=DEL_PORT)
+        r = nc.receiver(a)
+        with self.assertRaises(zmq.ZMQError):
+            sock.bind(a.connstr())
+        del r
+        sock.bind(a.connstr())
+        sock.close()
 
 
 def _process(v):

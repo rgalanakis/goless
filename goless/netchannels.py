@@ -11,10 +11,12 @@ PROTOCOL_TCP = 'tcp'
 
 DEBUG = True
 
+PREFIX = ''
+
 _out = sys.__stdout__
 def debug(msg, *args):
     if DEBUG:
-        _out.write('%s: %s\n' % (os.getpid(), str(msg) % args))
+        _out.write('%s%s: %s\n' % (PREFIX, os.getpid(), str(msg) % args))
         _out.flush()
 
 
@@ -38,13 +40,20 @@ class _NetChan(object):
     def __init__(self, sock, name):
         self.sock = sock
         self.name = name
+        self._closed = False
 
     def debug(self, msg, *args):
         debug('%s: %s' % (self.name, msg % args))
 
     def close(self):
+        if self._closed:
+            return
         self.debug('closing')
         self.sock.close()
+        self._closed = True
+
+    def __del__(self):
+        self.close()
 
 
 class sender(_NetChan):
@@ -60,6 +69,10 @@ class sender(_NetChan):
         ack = self.sock.recv()
         self.debug('received ack')
         assert ack == 'ack'
+
+
+class sender1(sender): pass
+class sender2(sender): pass
 
 
 class receiver(_NetChan):

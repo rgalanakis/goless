@@ -24,6 +24,7 @@ import (
 )
 
 const queueLen int = 10000
+
 type timing float64
 
 func benchChannel(chanSize int) timing {
@@ -53,7 +54,44 @@ func benchChannels() {
 }
 
 func benchSelect(useDefault bool) timing {
-    c := make(chan int, 0)
+	c := make(chan int, 0)
+
+	go func() {
+		for {
+			c <- 0
+			<-c
+		}
+	}()
+
+	start := time.Now()
+
+	if useDefault {
+		for i := 0; i <= queueLen; i++ {
+			select {
+			case c <- 0: // pass
+			case <-c: // pass
+			case c <- 0: // pass
+			case <-c: //pass
+			}
+		}
+	} else {
+		for i := 0; i <= queueLen; i++ {
+			select {
+			case c <- 0: // pass
+			case <-c: // pass
+			case c <- 0: // pass
+			case <-c: // pass
+			default: // pass
+			}
+		}
+	}
+
+	elapsed := time.Since(start)
+	return timing(elapsed.Seconds())
+}
+
+func benchReflectSelect(useDefault bool) timing {
+	c := make(chan int, 0)
 
 	caseCnt := 4
 	if useDefault {
@@ -68,10 +106,10 @@ func benchSelect(useDefault bool) timing {
 		cases[4] = reflect.SelectCase{Dir: reflect.SelectDefault}
 	}
 
-    go func() {
+	go func() {
 		for {
 			c <- 0
-			<- c
+			<-c
 		}
 	}()
 
@@ -84,10 +122,16 @@ func benchSelect(useDefault bool) timing {
 }
 
 func benchSelects() {
-	tookNoDefault := benchSelect(false)
-	writeResult("select", tookNoDefault)
-	tookWithDefault := benchSelect(true)
-	writeResult("select_default", tookWithDefault)
+	var took timing
+	took = benchSelect(false)
+	writeResult("select", took)
+	took = benchSelect(true)
+	writeResult("select_default", took)
+
+	took = benchReflectSelect(false)
+	writeResult("select (reflect)", took)
+	took = benchReflectSelect(true)
+	writeResult("select_default (reflect)", took)
 }
 
 func writeResult(benchName string, elapsed timing) {

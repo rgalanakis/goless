@@ -129,9 +129,9 @@ func benchSelects() {
 	writeResult("select_default", took)
 
 	took = benchReflectSelect(false)
-	writeResult("select (reflect)", took)
+	writeResult("r-select", took)
 	took = benchReflectSelect(true)
-	writeResult("select_default (reflect)", took)
+	writeResult("r-select_default", took)
 }
 
 func writeResult(benchName string, elapsed timing) {

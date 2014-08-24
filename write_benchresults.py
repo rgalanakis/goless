@@ -28,7 +28,7 @@ EXE_BACKEND_MATRIX = [
     [PY3, 'gevent']
 ]
 RST = os.path.join('doc', 'benchtable.rst')
-COLUMN_WIDTHS = 9, 9, 14, 7
+COLUMN_WIDTHS = 9, 9, 16, 7
 
 BenchmarkResult = collections.namedtuple(
     'BenchResult', ['platform', 'backend', 'benchmark', 'time'])

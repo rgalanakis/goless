@@ -1,8 +1,10 @@
 """
 This file demonstrates a parallel for loop using goless.
-The parallel for pattern is very simple,
+The "parallel for" pattern is very simple,
 so I chose a simple example (negating an integer),
-rather than something more realistic.
+rather than something more realistic which would obfuscate things.
+Of course this is Python so it's not actually parallel
+but you already knew that :)
 
 The example uses shared memory and a 'semaphor' channel.
 Shared memory is normally a no-no,
@@ -33,7 +35,7 @@ def pfor():
         semaphore.send()
 
     for i, item in enumerate(items):
-        mapper(i, item)
+        goless.go(mapper, i, item)
     for _ in range(n):
         semaphore.recv()
     print('Finished: %s' % results)

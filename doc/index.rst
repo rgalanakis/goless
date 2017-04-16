@@ -28,21 +28,23 @@ For an example of what **goless** can do,
 here is the Go program at https://gobyexample.com/select
 reimplemented with **goless**::
 
-    c1 = goless.chan()
-    c2 = goless.chan()
+    from goless import *
+    
+    c1 = chan()
+    c2 = chan()
 
     def func1():
         time.sleep(1)
         c1.send('one')
-    goless.go(func1)
+    go(func1)
 
     def func2():
         time.sleep(2)
         c2.send('two')
-    goless.go(func2)
+    go(func2)
 
     for i in range(2):
-        case, val = goless.select([goless.rcase(c1), goless.rcase(c2)])
+        case, val = select(rcase(c1), rcase(c2))
         print(val)
 
 It is surely a testament to Go's style that it isn't much less Python code than Go code,
@@ -91,9 +93,11 @@ that are passed into :func:`goless.select`.
 The function returns the chosen case, which the caller will usually switch off of.
 For example::
 
-    chan = goless.chan()
-    cases = [goless.rcase(chan), goless.scase(chan, 1), goless.dcase()]
-    chosen, value = goless.select(cases)
+    from goless import *
+    
+    chan = chan()
+    cases = [rcase(chan), scase(chan, 1), dcase()]
+    chosen, value = select(cases)
     if chosen is cases[0]:
         print('Received %s' % value)
     elif chosen is cases[1]:

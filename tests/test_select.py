@@ -53,6 +53,8 @@ class SendCaseTests(BaseTests):
         assert_default_readiness()
         be.run(self.ch.send)
         self.assertFalse(self.ca.ready())
+        be.run(self.ch.recv)
+        assert_default_readiness()
 
     def test_executes(self):
         def recv():

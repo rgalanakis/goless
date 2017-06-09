@@ -22,4 +22,4 @@ class BaseTests(unittest.TestCase):
 
     def tearDown(self):
         be.yield_()
-        self.assertTrue(be.would_deadlock())
+        self.assertTrue(be.would_deadlock(), 'Task(s) still running after test finished')

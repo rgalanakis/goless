@@ -20,6 +20,6 @@ class BaseTests(unittest.TestCase):
     def setUp(self):
         be.yield_()
 
-        def doyield():
-            be.yield_()
-        self.addCleanup(doyield)
+    def tearDown(self):
+        be.yield_()
+        self.assertTrue(be.would_deadlock(), 'Task(s) still running after test finished')

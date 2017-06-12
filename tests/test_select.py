@@ -1,5 +1,6 @@
 import goless
 from goless.backends import current as be
+from goless.channels import ChannelClosed
 from . import BaseTests
 
 
@@ -93,7 +94,7 @@ class SelectTests(BaseTests):
         self.assertIs(result, cases[1])
         self.assertEqual(val, 3)
 
-    def test_select_ok_default_true(self):
+    def test_select_ok_default_is_ok(self):
         cases = [goless.rcase(self.chan1), goless.dcase()]
         result, val, ok = goless.select_ok(cases)
         self.assertIs(result, cases[1])
@@ -119,6 +120,12 @@ class SelectTests(BaseTests):
         self.assertIs(result, cases[0])
         self.assertIsNone(val)
         self.assertFalse(ok)
+
+    def test_select_raises_if_closed(self):
+        self.chan1.close()
+        cases = [goless.rcase(self.chan1), goless.dcase()]
+        with self.assertRaises(ChannelClosed):
+            goless.select(cases)
 
     def test_select_no_default_no_ready_blocks(self):
         chan1 = goless.chan()

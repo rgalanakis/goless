@@ -43,7 +43,7 @@ def select_ok(*cases):
     """
     Select the first case that becomes ready, including an ``ok`` indication.
     This is the same as the ``select`` method except than an ``ok`` indication
-    is included allowing checks for closed channels.
+    is included, allowing checks for closed channels.
 
     :param cases: List of case instances, such as
       :class:`goless.rcase`, :class:`goless.scase`, or :class:`goless.dcase`.

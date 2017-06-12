@@ -19,7 +19,7 @@ from .backends import current as _be, Deadlock, GolessException
 # noinspection PyUnresolvedReferences
 from .channels import chan, ChannelClosed
 # noinspection PyUnresolvedReferences
-from .selecting import dcase, rcase, scase, select
+from .selecting import dcase, rcase, scase, select, select_ok
 
 
 version_info = 0, 7, 2

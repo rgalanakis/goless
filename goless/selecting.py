@@ -11,7 +11,7 @@ class rcase(object):
         self.chan = chan
 
     def ready(self):
-        return self.chan._closed or self.chan.recv_ready()
+        return self.chan is not None and (self.chan._closed or self.chan.recv_ready())
 
     def exec_(self):
         return self.chan.recv()
@@ -26,7 +26,7 @@ class scase(object):
         self.value = value
 
     def ready(self):
-        return self.chan._closed or self.chan.send_ready()
+        return self.chan is not None and (self.chan._closed or self.chan.send_ready())
 
     def exec_(self):
         self.chan.send(self.value)

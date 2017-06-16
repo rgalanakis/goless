@@ -22,7 +22,7 @@ matrix:
     - python: pypy
       env:
       - TOX_ENV=pypy2gevent
-    - python: pypy3
+    - python: pypy
       env:
       - TOX_ENV=pypy3gevent
     - python: 2.7
@@ -41,16 +41,16 @@ before_install:
             DOWNLOAD_URL="https://bitbucket.org/pypy/pypy/downloads/pypy3-v5.8.0-linux64.tar.bz2"
         fi
 
-        PYTHON_DIR="~/cache/${PYTHON_NAME}"
+        PYTHON_DIR="~/.cache/${PYTHON_NAME}"
         if [ ! -d ${PYTHON_DIR} ] ; then
             mkdir -p ${PYTHON_DIR}
             wget -qO- ${DOWNLOAD_URL} | tar jxf - --strip-components=1 -C ${PYTHON_DIR}
         fi
         export PATH=${PYTHON_DIR}/bin:${PATH}
     fi
-    if [[ $TOX_ENV = 27slptravis ]] && [ ! -d ~/cache/stackless-2.7.6 ]; then
+    if [[ $TOX_ENV = 27slptravis ]] && [ ! -d ~/.cache/stackless-2.7.6 ]; then
         wget http://www.robg3d.com/downloads/stackless-2.7.6_amd64.zip
-        unzip stackless-2.7.6_amd64.zip -d ~/cache/
+        unzip stackless-2.7.6_amd64.zip -d ~/.cache/
     fi
     set +e
 install:
@@ -65,8 +65,7 @@ after_success:
 cache:
   directories:
     - .tox
-    - $HOME/.cache/pip
-    - $HOME/cache
+    - $HOME/.cache
 # blacklist
 branches:
   except:

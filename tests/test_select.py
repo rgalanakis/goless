@@ -101,9 +101,9 @@ class SelectTests(BaseTests):
         self.assertTrue(ok)
 
     def test_select_ok_ignores_null_chan(self):
-        cases = [goless.rcase(None), goless.dcase()]
+        cases = [goless.scase(None, None), goless.rcase(None), goless.dcase()]
         result, val, ok = goless.select_ok(cases)
-        self.assertIs(result, cases[1])
+        self.assertIs(result, cases[2])
         self.assertTrue(ok)
 
     def test_select_ok_chooses_closed_over_default(self):

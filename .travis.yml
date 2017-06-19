@@ -1,19 +1,60 @@
 language: python
-python:
-  - "2.7"
-env:
-  - TOX_ENV=26gevent
-  - TOX_ENV=27gevent
-  - TOX_ENV=pypygevent
-  - TOX_ENV=33gevent
-  - TOX_ENV=34gevent
-  - TOX_ENV=27slptravis
+matrix:
+  include:
+    - python: 2.6
+      env:
+      - TOX_ENV=26gevent
+    - python: 2.7
+      env:
+      - TOX_ENV=27gevent
+    - python: 3.3
+      env:
+      - TOX_ENV=33gevent
+    - python: 3.4
+      env:
+      - TOX_ENV=34gevent
+    - python: 3.5
+      env:
+      - TOX_ENV=35gevent
+    - python: 3.6
+      env:
+      - TOX_ENV=36gevent
+    - python: pypy
+      env:
+      - TOX_ENV=pypy2gevent
+    - python: pypy
+      env:
+      - TOX_ENV=pypy3gevent
+    - python: 2.7
+      env:
+      - TOX_ENV=27slptravis
 before_install:
-  - if [ \"$TOX_ENV\" == \"27slptravis\" ]; then wget http://www.robg3d.com/downloads/stackless-2.7.6_amd64.zip; fi
-  - if [ \"$TOX_ENV\" == \"27slptravis\" ]; then unzip -q stackless-2.7.6_amd64.zip -d $HOME; fi
+  - |
+    set -e
+    if [[ $TOX_ENV == pypy* ]]; then
+        # Travis pypy versions are super old, so download manually.
+        if [[ $TOX_ENV == pypy2* ]]; then
+            PYTHON_NAME="pypy"
+            DOWNLOAD_URL="https://bitbucket.org/pypy/pypy/downloads/pypy2-v5.8.0-linux64.tar.bz2"
+        elif [[ $TOX_ENV == pypy3* ]]; then
+            PYTHON_NAME="pypy3"
+            DOWNLOAD_URL="https://bitbucket.org/pypy/pypy/downloads/pypy3-v5.8.0-linux64.tar.bz2"
+        fi
+
+        PYTHON_DIR="~/.cache/${PYTHON_NAME}"
+        if [ ! -d ${PYTHON_DIR} ] ; then
+            mkdir -p ${PYTHON_DIR}
+            wget -qO- ${DOWNLOAD_URL} | tar jxf - --strip-components=1 -C ${PYTHON_DIR}
+        fi
+        export PATH=${PYTHON_DIR}/bin:${PATH}
+    fi
+    if [[ $TOX_ENV = 27slptravis ]] && [ ! -d ~/.cache/stackless-2.7.6 ]; then
+        wget http://www.robg3d.com/downloads/stackless-2.7.6_amd64.zip
+        unzip stackless-2.7.6_amd64.zip -d ~/.cache/
+    fi
+    set +e
 install:
-  - "pip install tox --download-cache $HOME/.pip-cache"
-  - "pip install coveralls --download-cache $HOME/.pip-cache"
+  - "pip install tox coveralls"
 script:
   - tox -e $TOX_ENV
 #after_failure:
@@ -24,7 +65,7 @@ after_success:
 cache:
   directories:
     - .tox
-    - $HOME/.pip-cache/
+    - $HOME/.cache
 # blacklist
 branches:
   except:

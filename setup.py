@@ -10,16 +10,10 @@ try:
     # noinspection PyUnresolvedReferences
     import stackless
 except ImportError:
-    # See https://github.com/rgalanakis/goless/issues/21
-    # for why we need this (waiting for new gevent version).
-    if sys.version_info[0] == 3:
-        warnings.warn(
-            'You will need to install gevent from GitHub to use goless with '
-            'gevent under Python3. Run something like '
-            '"pip install git+https://github.com/surfly/gevent.git#gevent-egg"'
-        )
+    if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
+        requires.append('gevent==1.1')
     else:
-        requires.append('gevent>=1.0')
+        requires.append('gevent')
 
 setup(
     name='goless',

@@ -60,3 +60,11 @@ def go(func, *args, **kwargs):
             on_panic(*_sys.exc_info())
 
     _be.start(safe_wrapped, func)
+
+
+def sleep(secs):
+    """
+    Async-compatible shim for time.sleep, which should generally
+    not be used because it can be blocking.
+    """
+    _be.sleep(secs)

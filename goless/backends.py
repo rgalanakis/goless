@@ -49,6 +49,10 @@ class Backend(object):
         """
         raise NotImplementedError()
 
+    def sleep(self, secs):
+        """Sleep the current goroutine."""
+        raise NotImplementedError()
+
     def resume(self, tasklet):
         """Runs the given tasklet/greenlet immediately."""
         raise NotImplementedError()
@@ -66,8 +70,13 @@ class Backend(object):
 
 # We can't easily use stackless on our CI,
 # so don't worry about covering it.
+# For sleep implementation, credit to
+# http://www.grant-olson.net/files/why_stackless.html#the-stackless-version-of-the-code
 def _make_stackless():  # pragma: no cover
     import stackless
+
+    sleeping_tasklets = []
+    sleeping_ticks = 0
 
     class StacklessChannel(stackless.channel):
         def send(self, value):
@@ -100,6 +109,14 @@ def _make_stackless():  # pragma: no cover
                 if ex.args[0] != 'No runnable tasklets left.':
                     pass
                 raise
+
+        def sleep(self, secs):
+            channel = stackless.channel()
+            end_time = sleeping_ticks + secs
+            sleeping_tasklets.append((end_time, channel))
+            sleeping_tasklets.sort()
+            # Block until we get sent an awakening notification.
+            channel.receive()
 
         def resume(self, tasklet):
             tasklet.run()
@@ -157,6 +174,9 @@ def _make_gevent():
         def yield_(self):
             with as_deadlock(gevent.hub.LoopExit):
                 gevent.sleep()
+
+        def sleep(self, secs):
+            gevent.sleep(secs)
 
         def resume(self, tasklet):
             self.yield_()

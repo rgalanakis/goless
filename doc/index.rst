@@ -6,6 +6,7 @@ goless: Go-style Python
 - :ref:`a-channels`
 - :ref:`a-select`
 - :ref:`a-exceptions`
+- :ref:`a-sleeping`
 - :ref:`a-examples`
 - :ref:`a-benchmarks`
 - :ref:`a-backends`
@@ -32,12 +33,12 @@ reimplemented with **goless**::
     c2 = goless.chan()
 
     def func1():
-        time.sleep(1)
+        goless.sleep(1)
         c1.send('one')
     goless.go(func1)
 
     def func2():
-        time.sleep(2)
+        goless.sleep(2)
         c2.send('two')
     goless.go(func2)
 
@@ -129,6 +130,22 @@ If you are not happy with this behavior,
 you should patch `goless.on_panic` to provide custom behavior.
 
 If you find a better pattern, create an issue on GitHub.
+
+.. _a-sleeping:
+
+Sleeping
+========
+
+In general, you should avoid `time.sleep` with asynchronous code,
+because it may still block a thread. Each backend has a shim for
+sleeping the current coroutine, with the current backend's sleep
+available as `goless.sleep(seconds)`.
+
+Under the hood, this uses `gevent.sleep`, or a custom Stackless
+sleep implementation.
+
+But again, you should generally avoid sleeping if you are using
+asynchronous programming.
 
 .. _a-examples:
 

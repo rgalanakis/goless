@@ -17,12 +17,12 @@ class Examples(BaseTests):
         c2 = goless.chan()
 
         def func1():
-            time.sleep(.1)
+            goless.sleep(.1)
             c1.send('one')
         goless.go(func1)
 
         def func2():
-            time.sleep(.2)
+            goless.sleep(.2)
             c2.send('two')
         goless.go(func2)
 
@@ -52,7 +52,7 @@ class Examples(BaseTests):
         def worker(id, jobs, results):
             for j in jobs:
                 jobs_done.append('w %s j %s' % (id, j))
-                time.sleep(.01)
+                goless.sleep(.01)
                 results.send(j * 2)
 
         jobs = goless.chan(100)

@@ -3,6 +3,7 @@ import gc as _gc
 import os as _os
 import platform as _platform
 import sys as _sys
+import time as _time
 
 from . import compat
 
@@ -75,8 +76,53 @@ class Backend(object):
 def _make_stackless():  # pragma: no cover
     import stackless
 
-    sleeping_tasklets = []
-    sleeping_ticks = 0
+    class SleepingTaskletManager(object):
+        def __init__(self):
+            self.next_sleep_id = 0
+            self.sleeping_tasklets = []
+            self.sleeping_ticks = 0
+            self._run_tasklet = None
+            self.running = False
+
+        def _run(self):
+            while self.has_sleeping_tasklets():
+                print('checking for waking')
+                end_time = self.sleeping_tasklets[0][0]
+                while end_time <= self.sleeping_ticks and self.has_sleeping_tasklets():
+                    print('et', end_time, 'ticks', self.sleeping_ticks, 'sleeping', self.sleeping_tasklets)
+                    channel = self.sleeping_tasklets[0][2]
+                    del self.sleeping_tasklets[0]
+                    # We have to send something, but it doesn't matter
+                    # what as it is not used.
+                    channel.send(None)
+                    if self.has_sleeping_tasklets():
+                        end_time = self.sleeping_tasklets[0][0]  # check next
+                self.sleeping_ticks += 1
+                stackless.schedule()
+            self._run_tasklet.kill()
+            self.running = False
+            print('no more sleeping tasklets')
+
+        def ensure_running(self):
+            if self.running is False:
+                self.running = True
+                self._run_tasklet = stackless.tasklet(self._run)()
+
+        def has_sleeping_tasklets(self):
+            return len(self.sleeping_tasklets) > 0
+
+        def sleep(self, secs):
+            self.ensure_running()
+            # next_sleep_id to disambiguate identical end_times in sorting
+            self.next_sleep_id += 1
+            channel = stackless.channel()
+            end_time = self.sleeping_ticks + secs
+            self.sleeping_tasklets.append((end_time, self.next_sleep_id, channel))
+            self.sleeping_tasklets.sort()
+            # Block until we get sent an awakening notification.
+            channel.receive()
+
+    sleeping_tasklet_mgr = SleepingTaskletManager()
 
     class StacklessChannel(stackless.channel):
         def send(self, value):
@@ -107,16 +153,20 @@ def _make_stackless():  # pragma: no cover
                 return stackless.schedule()
             except RuntimeError as ex:
                 if ex.args[0] != 'No runnable tasklets left.':
+                    print('no run')
                     pass
                 raise
 
         def sleep(self, secs):
-            channel = stackless.channel()
-            end_time = sleeping_ticks + secs
-            sleeping_tasklets.append((end_time, channel))
-            sleeping_tasklets.sort()
-            # Block until we get sent an awakening notification.
-            channel.receive()
+            try:
+                sleeping_tasklet_mgr.sleep(secs)
+                print('coop slept')
+            except RuntimeError as ex:
+                print('errored')
+                if ex.args[0] == 'Deadlock: the last runnable tasklet cannot be blocked.':
+                    _time.sleep(secs)
+                else:
+                    raise
 
         def resume(self, tasklet):
             tasklet.run()

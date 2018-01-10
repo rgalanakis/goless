@@ -17,12 +17,16 @@ class Examples(BaseTests):
         c2 = goless.chan()
 
         def func1():
+            print('func1 going to sleep')
             goless.sleep(.1)
+            print('func1 slept')
             c1.send('one')
         goless.go(func1)
 
         def func2():
+            print('func2 going to sleep')
             goless.sleep(.2)
+            print('func2 slept')
             c2.send('two')
         goless.go(func2)
 
@@ -30,7 +34,9 @@ class Examples(BaseTests):
         callbacks = []
 
         for i in range(2):
+            print('selecting')
             _, val = goless.select([goless.rcase(c1), goless.rcase(c2)])
+            print('selected')
             callbacks.append(val)
 
         self.assertEqual(callbacks, ['one', 'two'])

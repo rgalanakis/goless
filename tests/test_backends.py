@@ -1,4 +1,5 @@
 import mock
+import time
 import traceback
 
 from . import BaseTests
@@ -95,6 +96,11 @@ class CurrentBackendTests(BaseTests):
             c.send(1)
         with self.assertRaises(backends.Deadlock):
             c.receive()
+
+    def testSleep(self):
+        t = time.time()
+        backends.current.sleep(0.5)
+        self.assertGreater(time.time(), t + 0.4)
 
 
 class AsDeadlockTests(BaseTests):

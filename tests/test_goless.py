@@ -1,5 +1,6 @@
 import mock
 import sys
+import time
 
 import goless
 from goless.backends import current as be
@@ -52,3 +53,10 @@ class PanicTests(BaseTests):
             with self.assertRaises(SystemExit):
                 goless.on_panic(*args)
         self.assertEqual(logmock.call_count, 1)
+
+
+class SleepTests(BaseTests):
+    def test_sleep(self):
+        t = time.time()
+        goless.sleep(0.5)
+        self.assertGreater(time.time(), t + 0.4)

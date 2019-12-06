@@ -25,9 +25,6 @@ class WaitGroupTests(BaseTests):
         wg.done()
         wg.wait()
 
-    def test_can_select(self):
-        pass
-
     def test_errors_on_non_positive_add(self):
         with self.assertRaisesRegex(waitgroup.InvalidWaitGroup, 'add delta must be positive'):
             goless.WaitGroup(-1)
@@ -48,3 +45,36 @@ class WaitGroupTests(BaseTests):
         wg.wait()
         with self.assertRaisesRegex(waitgroup.InvalidWaitGroup, 'add cannot be called after wait'):
             wg.add(1)
+
+    def test_wait_case_returns_case_for_select_when_counter_is_zero(self):
+        wg = goless.WaitGroup()
+        wg.add(1)
+        wg.done()
+
+        wait_case = wg.wait_case()
+        selected, _ = goless.select([wait_case, goless.dcase()])
+        self.assertIs(selected, wait_case)
+
+    def test_wait_case_returns_case_for_select_when_counter_is_positive(self):
+        wg = goless.WaitGroup()
+        wg.add(1)
+
+        wait_case = wg.wait_case()
+        selected, _ = goless.select([goless.dcase(), wait_case])
+        self.assertIsNot(selected, wait_case)
+
+        wg.done()
+        selected, _ = goless.select([goless.dcase(), wait_case])
+        self.assertIs(selected, wait_case)
+
+    def test_wait_case_errors_if_already_waited(self):
+        wg = goless.WaitGroup()
+        wg.wait()
+        with self.assertRaisesRegex(waitgroup.InvalidWaitGroup, 'wait can only be called once'):
+            wg.wait_case()
+
+    def test_wait_case_with_no_counter_selects(self):
+        wg = goless.WaitGroup()
+        wait_case = wg.wait_case()
+        selected, _ = goless.select([goless.dcase(), wait_case])
+        self.assertIs(selected, wait_case)

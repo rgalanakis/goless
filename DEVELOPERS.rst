@@ -28,7 +28,7 @@ It also tells you what the install requirements are,
 and should be a help if you want to set up some sort of custom environment.
 
 Finally, please note that the `Travis CI project`_ runs
-all the supported configurations, so if you can't test all enviroments locally,
+all the supported configurations, so if you can't test all environments locally,
 you'll find out if you broke something once Travis runs.
 
 Running with Stackless

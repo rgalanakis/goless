@@ -23,7 +23,7 @@ import os
 sys.path.append(os.path.abspath('..'))
 
 # We may not have stackless or gevent available,
-# so just mock them out- we don't need them for autodoec.
+# so just mock them out- we don't need them for autodoc.
 import imp
 for name in 'stackless', 'gevent':
     sys.modules[name] = imp.new_module(name)

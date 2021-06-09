@@ -192,7 +192,7 @@ class BackendChannelSenderReceiverPriorityTest(BaseTests):
     Tests if the current backend channel implementation has the correct
     sender/receiver priority (aka preference in stackless).
     Current implementations of goless channels
-    depend on receiver having the execution priotity!
+    depend on receiver having the execution priority!
     """
 
     def test_has_correct_sender_receiver_priority(self):

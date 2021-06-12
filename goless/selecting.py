@@ -1,4 +1,5 @@
 from .backends import current as _be, Deadlock as _Deadlock
+from .channels import ChannelClosed
 
 
 # noinspection PyPep8Naming,PyShadowingNames
@@ -10,7 +11,7 @@ class rcase(object):
         self.chan = chan
 
     def ready(self):
-        return self.chan.recv_ready()
+        return self.chan is not None and (self.chan._closed or self.chan.recv_ready())
 
     def exec_(self):
         return self.chan.recv()
@@ -25,7 +26,7 @@ class scase(object):
         self.value = value
 
     def ready(self):
-        return self.chan.send_ready()
+        return self.chan is not None and (self.chan._closed or self.chan.send_ready())
 
     def exec_(self):
         self.chan.send(self.value)
@@ -38,20 +39,15 @@ class dcase(object):
         return False
 
 
-def select(*cases):
+def select_ok(*cases):
     """
-    Select the first case that becomes ready.
-    If a default case (:class:`goless.dcase`) is present,
-    return that if no other cases are ready.
-    If there is no default case and no case is ready,
-    block until one becomes ready.
-
-    See Go's ``reflect.Select`` method for an analog
-    (http://golang.org/pkg/reflect/#Select).
+    Select the first case that becomes ready, including an ``ok`` indication.
+    This is the same as the ``select`` method except than an ``ok`` indication
+    is included, allowing checks for closed channels.
 
     :param cases: List of case instances, such as
       :class:`goless.rcase`, :class:`goless.scase`, or :class:`goless.dcase`.
-    :return: ``(chosen case, received value)``.
+    :return: ``(chosen case, received value, ok indication)``.
       If the chosen case is not an :class:`goless.rcase`, it will be None.
     """
     if len(cases) == 0:
@@ -70,13 +66,16 @@ def select(*cases):
     default = None
     for c in cases:
         if c.ready():
-            return c, c.exec_()
+            try:
+                return c, c.exec_(), True
+            except ChannelClosed:
+                return c, None, False
         if isinstance(c, dcase):
             assert default is None, 'Only one default case is allowd.'
             default = c
     if default is not None:
         # noinspection PyCallingNonCallable
-        return default, None
+        return default, None, True
 
     # We need to check for deadlocks before selecting.
     # We can't rely on the underlying backend to do it,
@@ -89,5 +88,33 @@ def select(*cases):
     while True:
         for c in cases:
             if c.ready():
-                return c, c.exec_()
+                try:
+                    return c, c.exec_(), True
+                except ChannelClosed:
+                    return c, None, False
         _be.yield_()
+
+
+def select(*cases):
+    """
+    Select the first case that becomes ready.
+    If a default case (:class:`goless.dcase`) is present,
+    return that if no other cases are ready.
+    If there is no default case and no case is ready,
+    block until one becomes ready.
+
+    See Go's ``reflect.Select`` method for an analog
+    (http://golang.org/pkg/reflect/#Select).
+
+    :param cases: List of case instances, such as
+      :class:`goless.rcase`, :class:`goless.scase`, or :class:`goless.dcase`.
+    :return: ``(chosen case, received value)``.
+      If the chosen case is not an :class:`goless.rcase`, it will be None.
+    """
+    result = select_ok(*cases)
+    if result is not None:
+        chosen, value, ok = result
+        if not ok:
+            raise ChannelClosed()
+        result = chosen, value
+    return result

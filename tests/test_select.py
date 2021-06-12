@@ -1,5 +1,6 @@
 import goless
 from goless.backends import current as be
+from goless.channels import ChannelClosed
 from . import BaseTests
 
 
@@ -92,6 +93,45 @@ class SelectTests(BaseTests):
         result, val = goless.select(cases)
         self.assertIs(result, cases[1])
         self.assertEqual(val, 3)
+
+    def test_select_ok_default_is_ok(self):
+        cases = [goless.rcase(self.chan1), goless.dcase()]
+        result, val, ok = goless.select_ok(cases)
+        self.assertIs(result, cases[1])
+        self.assertTrue(ok)
+
+    def test_select_ok_ignores_null_chan(self):
+        cases = [goless.scase(None, None), goless.rcase(None), goless.dcase()]
+        result, val, ok = goless.select_ok(cases)
+        self.assertIs(result, cases[2])
+        self.assertTrue(ok)
+
+    def test_select_ok_chooses_closed_over_default(self):
+        readychan = goless.chan(1)
+        readychan.send(3)
+        readychan.close()
+        cases = [goless.rcase(readychan), goless.dcase()]
+
+        result, val, ok = goless.select_ok(cases)
+        self.assertIs(result, cases[0])
+        self.assertEqual(val, 3)
+        self.assertTrue(ok)
+
+        result, val, ok = goless.select_ok(cases)
+        self.assertIs(result, cases[0])
+        self.assertIsNone(val)
+        self.assertFalse(ok)
+
+        result, val, ok = goless.select_ok(cases)
+        self.assertIs(result, cases[0])
+        self.assertIsNone(val)
+        self.assertFalse(ok)
+
+    def test_select_raises_if_closed(self):
+        self.chan1.close()
+        cases = [goless.rcase(self.chan1), goless.dcase()]
+        with self.assertRaises(ChannelClosed):
+            goless.select(cases)
 
     def test_select_no_default_no_ready_blocks(self):
         chan1 = goless.chan()

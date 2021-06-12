@@ -83,12 +83,12 @@ def _make_stackless():  # pragma: no cover
             return 'stackless'
 
         def start(self, func, *args, **kwargs):
-            return stackless.tasklet(func)(*args, **kwargs)
-
-        def run(self, func, *args, **kwargs):
-            t = self.start(func, *args, **kwargs)
+            t = stackless.tasklet(func)(*args, **kwargs)
             t.run()
             return t
+
+        def run(self, func, *args, **kwargs):
+            return self.start(func, *args, **kwargs)
 
         def channel(self):
             return StacklessChannel()

@@ -217,7 +217,7 @@ class AsyncChannel(BufferedChannel):
         BufferedChannel.__init__(self, _maxint)
 
 
-def chan(size=0):
+def chan(size=0) -> GoChannel:
     """
     Returns a bidirectional channel.
 

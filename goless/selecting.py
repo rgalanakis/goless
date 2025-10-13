@@ -6,6 +6,7 @@ class rcase(object):
     """
     A case that will ``chan.recv()`` when the channel is able to receive.
     """
+
     def __init__(self, chan):
         self.chan = chan
 
@@ -20,6 +21,7 @@ class rcase(object):
 class scase(object):
     """A case that will ``chan.send(value)``
     when the channel is able to send."""
+
     def __init__(self, chan, value):
         self.chan = chan
         self.value = value
@@ -34,6 +36,7 @@ class scase(object):
 # noinspection PyPep8Naming
 class dcase(object):
     """The default case."""
+
     def ready(self):
         return False
 
@@ -59,8 +62,10 @@ def select(*cases):
     # If the first argument is a list, it should be the only argument
     if isinstance(cases[0], list):
         if len(cases) != 1:
-            raise TypeError('Select can be called either with a list of cases '
-                            'or multiple case arguments, but not both.')
+            raise TypeError(
+                "Select can be called either with a list of cases "
+                "or multiple case arguments, but not both."
+            )
         cases = cases[0]
         if not cases:
             # Handle the case of an empty list as an argument,
@@ -72,7 +77,7 @@ def select(*cases):
         if c.ready():
             return c, c.exec_()
         if isinstance(c, dcase):
-            assert default is None, 'Only one default case is allowd.'
+            assert default is None, "Only one default case is allowd."
             default = c
     if default is not None:
         # noinspection PyCallingNonCallable
@@ -85,7 +90,7 @@ def select(*cases):
     # the loop, but since the check is slow
     # (gevent doesn't provide a fast way), let's leave it out here.
     if _be.would_deadlock():
-        raise _Deadlock('No other tasklets running, cannot select.')
+        raise _Deadlock("No other tasklets running, cannot select.")
     while True:
         for c in cases:
             if c.ready():

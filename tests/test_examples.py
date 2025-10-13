@@ -10,20 +10,21 @@ import goless
 
 
 class Examples(BaseTests):
-
     def test_select(self):
         # https://gobyexample.com/select
         c1 = goless.chan()
         c2 = goless.chan()
 
         def func1():
-            time.sleep(.1)
-            c1.send('one')
+            time.sleep(0.1)
+            c1.send("one")
+
         goless.go(func1)
 
         def func2():
-            time.sleep(.2)
-            c2.send('two')
+            time.sleep(0.2)
+            c2.send("two")
+
         goless.go(func2)
 
         # We don't print since we run this as a test.
@@ -33,16 +34,16 @@ class Examples(BaseTests):
             _, val = goless.select([goless.rcase(c1), goless.rcase(c2)])
             callbacks.append(val)
 
-        self.assertEqual(callbacks, ['one', 'two'])
+        self.assertEqual(callbacks, ["one", "two"])
 
     def test_range_over_channels(self):
         # https://gobyexample.com/range-over-channels
         queue = goless.chan(2)
-        queue.send('one')
-        queue.send('two')
+        queue.send("one")
+        queue.send("two")
         queue.close()
         elements = [elem for elem in queue]
-        self.assertEqual(elements, ['one', 'two'])
+        self.assertEqual(elements, ["one", "two"])
 
     def test_worker_pool(self):
         # https://gobyexample.com/worker-pools
@@ -51,8 +52,8 @@ class Examples(BaseTests):
         # noinspection PyShadowingNames,PyShadowingBuiltins
         def worker(id, jobs, results):
             for j in jobs:
-                jobs_done.append('w %s j %s' % (id, j))
-                time.sleep(.01)
+                jobs_done.append("w %s j %s" % (id, j))
+                time.sleep(0.01)
                 results.send(j * 2)
 
         jobs = goless.chan(100)
@@ -74,10 +75,10 @@ class Examples(BaseTests):
         cases = [goless.rcase(chan), goless.scase(chan, 1), goless.dcase()]
         chosen, value = goless.select(cases)
         if chosen is cases[0]:
-            print('Received %s' % value)
+            print("Received %s" % value)
         elif chosen is cases[1]:
             assert value is None
-            print('Sent.')
+            print("Sent.")
         else:
             assert chosen is cases[2], chosen
-            print('Default...')
+            print("Default...")

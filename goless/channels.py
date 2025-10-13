@@ -17,6 +17,7 @@ class GoChannel(object):
     Callers should never create this directly.
     Always use :func:`goless.chan` to create channels.
     """
+
     def __init__(self):
         self._closed = False
 
@@ -90,9 +91,11 @@ class GoChannel(object):
             raise StopIteration
 
     if _PY3:
+
         def __next__(self):
             return self._next()
     else:
+
         def next(self):
             return self._next()
 
@@ -105,7 +108,7 @@ class BufferedChannel(GoChannel):
 
     1. If there is a receiver waiting send the value through the channel.
        A waiting receiver indicates the buffer was empty.
-       It's uncertain in this case if there will be a context switch 
+       It's uncertain in this case if there will be a context switch
        (blocking the current task) or not.
     2. Else if there is no more room in the buffer,
        also send the value through the channel,
@@ -133,9 +136,11 @@ class BufferedChannel(GoChannel):
         buffer_size = len(self.values_deque)
         chan_balance = self.waiting_chan.balance
         assert buffer_size <= self.maxsize
-        assert ((chan_balance < 0 and buffer_size == 0)
-                or (chan_balance > 0 and buffer_size == self.maxsize)
-                or chan_balance == 0)
+        assert (
+            (chan_balance < 0 and buffer_size == 0)
+            or (chan_balance > 0 and buffer_size == self.maxsize)
+            or chan_balance == 0
+        )
         if chan_balance < 0 or buffer_size == self.maxsize:
             self.waiting_chan.send(value)
             if self._closed:

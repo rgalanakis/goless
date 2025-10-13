@@ -19,14 +19,14 @@ class RecvCaseTests(BaseTests):
         self.assertFalse(self.ca.ready())
 
     def test_executes(self):
-        be.run(self.ch.send, 'a')
+        be.run(self.ch.send, "a")
         x = self.ca.exec_()
-        self.assertEqual(x, 'a')
+        self.assertEqual(x, "a")
 
     def test_exec_with_no_body(self):
-        be.run(self.ch.send, 'a')
+        be.run(self.ch.send, "a")
         ca = goless.rcase(self.ch)
-        self.assertEqual(ca.exec_(), 'a')
+        self.assertEqual(ca.exec_(), "a")
 
 
 class RecvCaseUnbufferedTests(RecvCaseTests):
@@ -59,6 +59,7 @@ class SendCaseTests(BaseTests):
     def test_executes(self):
         def recv():
             a.append(self.ch.recv())
+
         a = []
         be.run(recv)
         self.ca.exec_()
@@ -101,6 +102,7 @@ class SelectTests(BaseTests):
 
         def sel():
             a.append(goless.select(cases))
+
         be.run(sel)
         self.assertEqual(a, [])
         chan1.send(5)
@@ -120,23 +122,23 @@ class SelectTests(BaseTests):
     def test_raises_if_multiple_default_cases(self):
         with self.assertRaises(AssertionError):
             goless.select([goless.dcase(), goless.dcase()])
-            
+
     def test_select_accepts_args(self):
         chan1 = goless.chan(1)
         scase = goless.scase(chan1, 1)
         chosen, val = goless.select(scase)
         self.assertIs(chosen, scase)
         self.assertIsNone(val)
-        
+
     def test_select_raises_for_list_and_args(self):
         chan1 = goless.chan(1)
         chan2 = goless.chan(1)
         chan3 = goless.chan(1)
         cases = [goless.scase(chan1, 1), goless.scase(chan2, 2)]
-        
+
         with self.assertRaises(TypeError):
             goless.select(cases, chan3)
-            
+
     def test_select_with_no_args_should_do_nothing(self):
         goless.select()
         goless.select([])

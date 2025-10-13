@@ -7,7 +7,6 @@ from . import BaseTests
 
 
 class GoTests(BaseTests):
-
     def setUp(self):
         BaseTests.setUp(self)
 
@@ -17,6 +16,7 @@ class GoTests(BaseTests):
 
         def restore_panic():
             goless.on_panic = oldpanic
+
         self.addCleanup(restore_panic)
 
         self.addCleanup(be.yield_)
@@ -35,7 +35,8 @@ class GoTests(BaseTests):
 
     def test_exc(self):
         def raiseit():
-            raise RuntimeError('ha!')
+            raise RuntimeError("ha!")
+
         goless.go(raiseit)
         be.yield_()
         self.assertEqual(len(self.panic_calls), 1)
@@ -48,7 +49,7 @@ class PanicTests(BaseTests):
         except AssertionError:
             args = sys.exc_info()
 
-        with mock.patch('logging.critical') as logmock:
+        with mock.patch("logging.critical") as logmock:
             with self.assertRaises(SystemExit):
                 goless.on_panic(*args)
         self.assertEqual(logmock.call_count, 1)

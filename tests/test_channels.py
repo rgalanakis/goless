@@ -26,8 +26,8 @@ class ChanTestMixin(object):
     def test_recv_on_closed_chan_raises_after_chan_empties(self):
         chan = self.makechan()
 
-        be.run(chan.send, 'hi')
-        self.assertEqual(chan.recv(), 'hi')
+        be.run(chan.send, "hi")
+        self.assertEqual(chan.recv(), "hi")
         chan.close()
         self.assertRaises(gochans.ChannelClosed, chan.recv)
 
@@ -63,7 +63,7 @@ class ChanTestMixin(object):
         self.assertEqual(marker, [1, 2])
 
     def test_channel_recv_raises_when_closed(self):
-        self._test_channel_raises_when_closed('recv')
+        self._test_channel_raises_when_closed("recv")
 
 
 class SyncChannelTests(BaseTests, ChanTestMixin):
@@ -79,36 +79,40 @@ class SyncChannelTests(BaseTests, ChanTestMixin):
         def check_results_empty():
             self.assertFalse(results)
             chan.send(2)
+
         goless.go(check_results_empty)
 
         results = [chan.recv(), chan.recv()]
         self.assertEqual(results, [1, 2])
 
     def test_channel_send_raises_when_closed(self):
-        self._test_channel_raises_when_closed('send')
+        self._test_channel_raises_when_closed("send")
 
     def _successful_op_does_not_yield_control(self, thisop, otherop):
         chan = self.makechan()
         actions = []
 
         def other():
-            actions.append('other pending')
+            actions.append("other pending")
             getattr(chan, otherop)()
-            actions.append('other acted')
+            actions.append("other acted")
 
-        actions.append('other start')
+        actions.append("other start")
         goless.go(other)
-        actions.append('this pending')
+        actions.append("this pending")
         getattr(chan, thisop)()
-        actions.append('this acted')
+        actions.append("this acted")
 
-        self.assertEqual(actions, [
-            'other start',
-            'this pending',
-            'other pending',
-            'other acted',
-            'this acted'
-        ])
+        self.assertEqual(
+            actions,
+            [
+                "other start",
+                "this pending",
+                "other pending",
+                "other acted",
+                "this acted",
+            ],
+        )
 
 
 class AsyncChannelTests(BaseTests, ChanTestMixin):
@@ -131,7 +135,7 @@ class BufferedChannelTests(BaseTests, ChanTestMixin):
         return gochans.BufferedChannel(2)
 
     def test_size_must_be_valid(self):
-        for size in '', None:
+        for size in "", None:
             self.assertRaises(AssertionError, gochans.BufferedChannel, size)
 
     def test_recv_and_send_with_room_do_not_block(self):
@@ -163,6 +167,7 @@ class BufferedChannelTests(BaseTests, ChanTestMixin):
             markers.append(chan.send(3))
             markers.append(chan.send(2))
             markers.append(chan.send(1))
+
         sender = be.run(sendall)
         self.assertEqual(len(markers), 2)
         got = [chan.recv(), chan.recv()]
@@ -179,6 +184,7 @@ class BufferedChannelTests(BaseTests, ChanTestMixin):
         def recvall():
             markers.append(chan.recv())
             markers.append(chan.recv())
+
         be.run(recvall)
         self.assertEqual(markers, [])
         chan.send(1)
@@ -221,21 +227,24 @@ class BackendChannelSenderReceiverPriorityTest(BaseTests):
         actions = []
 
         def other():
-            actions.append('recv pending')
+            actions.append("recv pending")
             chan.recv()
-            actions.append('recv acted')
+            actions.append("recv acted")
 
         goless.go(other)
-        actions.append('send pending')
+        actions.append("send pending")
         chan.send()
-        actions.append('send acted')
+        actions.append("send acted")
 
-        self.assertEqual(actions, [
-            'send pending',
-            'recv pending',
-            'recv acted',
-            'send acted',
-        ])
+        self.assertEqual(
+            actions,
+            [
+                "send pending",
+                "recv pending",
+                "recv acted",
+                "send acted",
+            ],
+        )
 
     def test_successful_recv_does_yield_control(self):
         """Test that send with a waiting receiver
@@ -244,17 +253,20 @@ class BackendChannelSenderReceiverPriorityTest(BaseTests):
         actions = []
 
         def other():
-            actions.append('send pending')
+            actions.append("send pending")
             chan.send()
-            actions.append('send acted')
+            actions.append("send acted")
 
         goless.go(other)
-        actions.append('recv pending')
+        actions.append("recv pending")
         chan.recv()
-        actions.append('recv acted')
+        actions.append("recv acted")
 
-        self.assertEqual(actions, [
-            'recv pending',
-            'send pending',
-            'recv acted',
-        ])
+        self.assertEqual(
+            actions,
+            [
+                "recv pending",
+                "send pending",
+                "recv acted",
+            ],
+        )

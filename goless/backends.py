@@ -21,13 +21,13 @@ def as_deadlock(errtypes):
     try:
         yield
     except errtypes as e:
-        ex = Deadlock('Error raised by backend due to detected deadlock. '
-                      'Original error: %r' % e)
+        ex = Deadlock(
+            "Error raised by backend due to detected deadlock. Original error: %r" % e
+        )
         compat.reraise(Deadlock, ex, e)
 
 
 class Backend(object):
-
     def shortname(self):
         return type(self).__name__
 
@@ -80,7 +80,7 @@ def _make_stackless():  # pragma: no cover
 
     class StacklessBackend(Backend):
         def shortname(self):
-            return 'stackless'
+            return "stackless"
 
         def start(self, func, *args, **kwargs):
             return stackless.tasklet(func)(*args, **kwargs)
@@ -97,7 +97,7 @@ def _make_stackless():  # pragma: no cover
             try:
                 return stackless.schedule()
             except RuntimeError as ex:
-                if ex.args[0] != 'No runnable tasklets left.':
+                if ex.args[0] != "No runnable tasklets left.":
                     pass
                 raise
 
@@ -108,7 +108,7 @@ def _make_stackless():  # pragma: no cover
             stackless.getmain().throw(errtype, *args)
 
         def would_deadlock(self):
-            if hasattr(stackless, 'runcount'):
+            if hasattr(stackless, "runcount"):
                 return stackless.runcount == 1
             return stackless.getruncount()
 
@@ -120,13 +120,13 @@ def _make_gevent():
     import gevent.hub
     import gevent.queue
     import greenlet
-    
+
     # We're importing socket to handle an known error in libev on Windows
     # See rgalanakis/goless#28 and surfly/gevent#459
-    import socket
+    import socket  # noqa: F401
 
     deadlock_errtypes = (gevent.hub.LoopExit,)
-    if _os.name == 'nt':
+    if _os.name == "nt":
         deadlock_errtypes += (SystemError,)
 
     class Channel(gevent.queue.Channel):
@@ -140,7 +140,7 @@ def _make_gevent():
 
     class GeventBackend(Backend):
         def shortname(self):
-            return 'gevent'  # pragma: no cover
+            return "gevent"  # pragma: no cover
 
         def start(self, func, *args, **kwargs):
             grnlet = gevent.spawn(func, *args, **kwargs)
@@ -178,13 +178,16 @@ def _make_gevent():
     return GeventBackend()
 
 
-NO_VALID_BACKEND_MSG = """No valid backend could be created.
+NO_VALID_BACKEND_MSG = (
+    """No valid backend could be created.
 Valid backends are
 gevent (for CPython, Stackless Python, or PyPy with newer version of gevent)
 and stackless (for Stackless Python or PyPy).
 You are currently running %s.
 See goless.backends.calculate_backend for more details about what backend
-is chosen under what conditions.""" % _sys.executable
+is chosen under what conditions."""
+    % _sys.executable
+)
 
 
 class NoValidBackend(Exception):
@@ -205,23 +208,20 @@ class NullBackend(Backend):
         raise NoValidBackend()
 
 
-_default_backends = {
-    'stackless': _make_stackless,
-    'gevent': _make_gevent
-}
+_default_backends = {"stackless": _make_stackless, "gevent": _make_gevent}
 
-is_pypy = _platform.python_implementation() == 'PyPy'
+is_pypy = _platform.python_implementation() == "PyPy"
 
 
 def _calc_default(backends):
     try:
-        if is_pypy and 'gevent' in backends:
-            return backends['gevent']()
-        if 'stackless' in backends:
-            return backends['stackless']()
+        if is_pypy and "gevent" in backends:
+            return backends["gevent"]()
+        if "stackless" in backends:
+            return backends["stackless"]()
     except ImportError:
         pass
-    raise SystemError('Swallow this, please.')
+    raise SystemError("Swallow this, please.")
 
 
 def calculate_backend(name_from_env, backends=None):
@@ -250,8 +250,9 @@ def calculate_backend(name_from_env, backends=None):
     if name_from_env:
         if name_from_env not in backends:
             raise RuntimeError(
-                'Invalid backend %r specified. Valid backends are: %s'
-                % (name_from_env, _default_backends.keys()))
+                "Invalid backend %r specified. Valid backends are: %s"
+                % (name_from_env, _default_backends.keys())
+            )
         # Allow this to raise, since it was explicitly set from the environment
         # noinspection PyCallingNonCallable
         return backends[name_from_env]()
@@ -268,4 +269,4 @@ def calculate_backend(name_from_env, backends=None):
     return NullBackend()
 
 
-current = calculate_backend(_os.getenv('GOLESS_BACKEND', ''))
+current = calculate_backend(_os.getenv("GOLESS_BACKEND", ""))

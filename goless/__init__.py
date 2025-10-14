@@ -18,18 +18,19 @@ from .backends import current as _be, Deadlock, GolessException
 
 # noinspection PyUnresolvedReferences
 from .channels import chan, ChannelClosed
+
 # noinspection PyUnresolvedReferences
 from .selecting import dcase, rcase, scase, select
 
 
 version_info = 0, 7, 3
-version = '.'.join([str(v) for v in version_info])
+version = ".".join([str(v) for v in version_info])
 
 __version__ = version
-__author__ = 'Rob Galanakis'
-__email__ = 'rob.galanakis@gmail.com'
-__url__ = 'https://github.com/rgalanakis/goless'
-__license__ = 'Apache'
+__author__ = "Rob Galanakis"
+__email__ = "rob.galanakis@gmail.com"
+__url__ = "https://github.com/rgalanakis/goless"
+__license__ = "Apache"
 
 
 def on_panic(etype, value, tb):

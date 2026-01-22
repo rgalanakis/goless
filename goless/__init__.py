@@ -21,6 +21,8 @@ from .channels import chan, ChannelClosed
 
 # noinspection PyUnresolvedReferences
 from .selecting import dcase, rcase, scase, select
+# noinspection PyUnresolvedReferences
+from .waitgroup import WaitGroup
 
 
 version_info = 0, 7, 3
@@ -49,6 +51,7 @@ def go(func, *args, **kwargs):
     the :func:`goless.on_panic` will be called,
     which by default logs the error and exits the process.
 
+    :param func: Callback function.
     :param args: Positional arguments to ``func``.
     :param kwargs: Keyword arguments to ``func``.
     """
